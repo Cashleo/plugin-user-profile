@@ -121,11 +121,11 @@ public function mostrar_pagina_mi_perfil(){
     // Si el usuario no ha accedido, lo llevamos a la página de acceso
     $this->redirigir_usuario_no_identificado();
 
-    $perfil_page = get_option('skpu_id_pagina_mi_perfil');
+    $perfil_page = get_option('wup_page_id_for_show_my_profile');
 
     ob_start();
 
-    skpu_cargar_vista('mi-perfil.php');
+    wup_load_view('mi-perfil.php');
 
     return ob_get_clean();
 }
@@ -138,7 +138,7 @@ public function mostrar_pagina_editar_mi_perfil(){
 
     ob_start();
 
-    skpu_cargar_vista('editar-mi-perfil.php');
+    wup_load_view('editar-mi-perfil.php');
 
     return ob_get_clean();
 }
@@ -150,7 +150,7 @@ public function redirigir_usuario_no_identificado(){
         return;
     }
 
-    $id_pagina_acceso = get_option('skpu_id_pagina_acceso');
+    $id_pagina_acceso = get_option('wup_page_id_for_login');
 
     if($id_pagina_acceso){
         $url_redirigir_usuario_no_identificado = get_permalink($id_pagina_acceso);
@@ -164,7 +164,7 @@ public function redirigir_usuario_no_identificado(){
 
 // Obtener la URL de la página de mi perfil
 public function url_de_mi_perfil(){
-    $id_pagina_mi_perfil = get_option('skpu_id_pagina_mi_perfil');
+    $id_pagina_mi_perfil = get_option('wup_page_id_for_show_my_profile');
     if(!$id_pagina_mi_perfil){
         return false;
     }
@@ -173,7 +173,7 @@ public function url_de_mi_perfil(){
 
 // Obtener la URL de la página de editar mi perfil
 public function url_de_editar_mi_perfil(){
-    $id_pagina_editar_mi_perfil = get_option('skpu_id_pagina_editar_mi_perfil');
+    $id_pagina_editar_mi_perfil = get_option('wup_page_id_for_edit_my_profile');
     if(!$id_pagina_editar_mi_perfil){
         return false;
     }

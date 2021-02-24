@@ -16,7 +16,7 @@ add_filter('manage_users_custom_column', 'contenido_columnas_tabla_usuarios', 10
 
 // FUNCIONES ASOCIADAS A LAS ACCIONES Y FILTROS
 
-function agregar_campos_personalizados_zona_usuario($usuario){
+function skpu_agregar_campos_personalizados_zona_usuario($usuario){
 ?>
 <table class="form-table">
     <tr>

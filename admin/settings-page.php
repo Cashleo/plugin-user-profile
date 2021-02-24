@@ -34,11 +34,11 @@ function skpu_crear_secciones_y_campos(){
     // Opción para página de acceso
     register_setting(
     'skpu_ajustes',          /* Nombre del grupo de opciones */
-    'skpu_id_pagina_acceso'  /* Nombre de la opción */
+    'wup_page_id_for_login'  /* Nombre de la opción */
     );
 
     add_settings_field(
-    'skpu_id_pagina_acceso',             /* Identificador único de este campo */
+    'wup_page_id_for_login',             /* Identificador único de este campo */
     'Id de la página Acceder',           /* Título que se muestra junto a este campo */
     'mostrar_input_pagina_de_acceso',    /* Función que imprime el input para el formulario */
     'pagina_ajustes_perfiles',           /* Página de ajustes a la que va asociado */
@@ -48,11 +48,11 @@ function skpu_crear_secciones_y_campos(){
     // Opción para página de registro
     register_setting(
     'skpu_ajustes',            /* Nombre del grupo de opciones */
-    'skpu_id_pagina_registro'  /* Nombre de la opción */
+    'wup_page_id_for_registration'  /* Nombre de la opción */
     );
 
     add_settings_field(
-    'skpu_id_pagina_registro',           /* Identificador único de este campo */
+    'wup_page_id_for_registration',           /* Identificador único de este campo */
     'Id de la página Registrarse',       /* Título que se muestra junto a este campo */
     'mostrar_input_pagina_de_registro',  /* Función que imprime el input para el formulario */
     'pagina_ajustes_perfiles',           /* Página de ajustes a la que va asociado */
@@ -62,11 +62,11 @@ function skpu_crear_secciones_y_campos(){
     // Opción para página de registro finalizado
     register_setting(
     'skpu_ajustes',                       /* Nombre del grupo de opciones */
-    'skpu_id_pagina_registro_finalizado'  /* Nombre de la opción */
+    'wup_page_id_for_registration_finished'  /* Nombre de la opción */
     );
 
     add_settings_field(
-    'skpu_id_pagina_registro_finalizado',           /* Identificador único de este campo */
+    'wup_page_id_for_registration_finished',           /* Identificador único de este campo */
     'Id de la página de Registro Finalizado',       /* Título que se muestra junto a este campo */
     'mostrar_input_pagina_de_registro_finalizado',  /* Función que imprime el input para el formulario */
     'pagina_ajustes_perfiles',                      /* Página de ajustes a la que va asociado */
@@ -76,11 +76,11 @@ function skpu_crear_secciones_y_campos(){
     // Opción para página mi perfil
     register_setting(
     'skpu_ajustes',             /* Nombre del grupo de opciones */
-    'skpu_id_pagina_mi_perfil'  /* Nombre de la opción */
+    'wup_page_id_for_show_my_profile'  /* Nombre de la opción */
     );
 
     add_settings_field(
-    'skpu_id_pagina_mi_perfil',          /* Identificador único de este campo */
+    'wup_page_id_for_show_my_profile',          /* Identificador único de este campo */
     'Id de la página Mi Perfil',         /* Título que se muestra junto a este campo */
     'mostrar_input_pagina_mi_perfil',    /* Función que imprime el input para el formulario */
     'pagina_ajustes_perfiles',           /* Página de ajustes a la que va asociado */
@@ -90,11 +90,11 @@ function skpu_crear_secciones_y_campos(){
     // Opción para página editar mi perfil
     register_setting(
     'skpu_ajustes',                    /* Nombre del grupo de opciones */
-    'skpu_id_pagina_editar_mi_perfil'  /* Nombre de la opción */
+    'wup_page_id_for_edit_my_profile'  /* Nombre de la opción */
     );
 
     add_settings_field(
-    'skpu_id_pagina_editar_mi_perfil',       /* Identificador único de este campo */
+    'wup_page_id_for_edit_my_profile',       /* Identificador único de este campo */
     'Id de la página Editar Perfil',         /* Título que se muestra junto a este campo */
     'mostrar_input_pagina_editar_mi_perfil', /* Función que imprime el input para el formulario */
     'pagina_ajustes_perfiles',               /* Página de ajustes a la que va asociado */
@@ -112,40 +112,40 @@ function mostrar_encabezado_seccion_ajustes_paginas(){
 function mostrar_input_pagina_de_acceso(){
     echo '<input
     type="number"
-    name="skpu_id_pagina_acceso"
-    value="'.esc_attr(get_option('skpu_id_pagina_acceso')).'" />';
+    name="wup_page_id_for_login"
+    value="'.esc_attr(get_option('wup_page_id_for_login')).'" />';
 }
 
 // Función que muestra el input de página de registro
 function mostrar_input_pagina_de_registro(){
     echo '<input
     type="number"
-    name="skpu_id_pagina_registro"
-    value="'.esc_attr(get_option('skpu_id_pagina_registro')).'" />';
+    name="wup_page_id_for_registration"
+    value="'.esc_attr(get_option('wup_page_id_for_registration')).'" />';
 }
 
 // Función que muestra el input de página de registro finalizado
 function mostrar_input_pagina_de_registro_finalizado(){
     echo '<input
     type="number"
-    name="skpu_id_pagina_registro_finalizado"
-    value="'.esc_attr(get_option('skpu_id_pagina_registro_finalizado')).'" />';
+    name="wup_page_id_for_registration_finished"
+    value="'.esc_attr(get_option('wup_page_id_for_registration_finished')).'" />';
 }
 
 // Función que muestra el input de página mi perfil
 function mostrar_input_pagina_mi_perfil(){
     echo '<input
     type="number"
-    name="skpu_id_pagina_mi_perfil"
-    value="'.esc_attr(get_option('skpu_id_pagina_mi_perfil')).'" />';
+    name="wup_page_id_for_show_my_profile"
+    value="'.esc_attr(get_option('wup_page_id_for_show_my_profile')).'" />';
 }
 
 // Función que muestra el input de página editar mi perfil
 function mostrar_input_pagina_editar_mi_perfil(){
     echo '<input
     type="number"
-    name="skpu_id_pagina_editar_mi_perfil"
-    value="'.esc_attr(get_option('skpu_id_pagina_editar_mi_perfil')).'" />';
+    name="wup_page_id_for_edit_my_profile"
+    value="'.esc_attr(get_option('wup_page_id_for_edit_my_profile')).'" />';
 }
 
 // Función que muestra el contenido de la página de ajustes

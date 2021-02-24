@@ -33,7 +33,7 @@ public function mostrar_formulario_registro($atts){
 
     if(is_user_logged_in()){
 
-        skpu_cargar_vista(
+        wup_load_view(
             'aviso-usuario-identificado.php',
             [
                 'user' => wp_get_current_user(),
@@ -46,7 +46,7 @@ public function mostrar_formulario_registro($atts){
             'rol_especifico'    => $atts['rol_especifico'],
             'rol_elegir' => $atts['rol_elegir']
         ];
-        skpu_cargar_vista('formulario-registro.php', $args);
+        wup_load_view('formulario-registro.php', $args);
 
     }
 
@@ -56,7 +56,7 @@ public function mostrar_formulario_registro($atts){
 // Obtener la URL de la página de registro
 public function url_de_registro(){
 
-    $id_pagina_registro = get_option('skpu_id_pagina_registro');
+    $id_pagina_registro = get_option('wup_page_id_for_registration');
 
     if(!$id_pagina_registro){
         $id_pagina_registro = site_url();
@@ -69,7 +69,7 @@ public function url_de_registro(){
 // Obtener la URL de la página de registro finalizado
 public function url_de_registro_finalizado(){
 
-    $id_pagina_registro_finalizado = get_option('skpu_id_pagina_registro_finalizado');
+    $id_pagina_registro_finalizado = get_option('wup_page_id_for_registration_finished');
 
     if(!$id_pagina_registro_finalizado){
         $id_pagina_registro_finalizado = site_url();
@@ -236,7 +236,7 @@ public function enviar_email_activacion($id_usuario){
         // Guardar el código junto a los metadatos del usuario
         update_user_meta($id_usuario, 'skpu_codigo_activacion_usuario', $codigo_activacion, true);
 
-        $url_de_acceso = get_permalink(get_option('skpu_id_pagina_acceso'));
+        $url_de_acceso = get_permalink(get_option('wup_page_id_for_login'));
 
         $nombre_del_sitio = wp_specialchars_decode(get_option('blogname'), ENT_QUOTES);
         $enlace_activacion = add_query_arg(

@@ -52,7 +52,7 @@ public function url_de_accion($accion = 'acceso', $redirigir_hacia = ''){
 // Obtener la URL de la página de acceso
 public function url_de_acceso(){
 
-    $id_pagina_acceso = get_option('skpu_id_pagina_acceso');
+    $id_pagina_acceso = get_option('wup_page_id_for_login');
 
     if(!$id_pagina_acceso){
         return false;
@@ -90,7 +90,7 @@ public function mostrar_formulario_acceso(){
     // Si ya ha iniciado sesión, mostrar la plantilla de usuario ya identificado
     if(is_user_logged_in()){
 
-        skpu_cargar_vista(
+        wup_load_view(
             'aviso-usuario-identificado.php',
             [
                 'user' => wp_get_current_user(),
@@ -113,17 +113,17 @@ public function mostrar_formulario_acceso(){
         // Clave perdida. Pedimos usuario para poder enviarle un correo de recuperación
         case 'clave-perdida':
             wp_cache_set( 'skpu_avisos_acceso', __('No te preocupes, escribe aquí tu usuario o email y recibirás un enlace para poder recuperar tu clave.', 'skpu') );
-            skpu_cargar_vista('formulario-clave-perdida.php', $args);
+            wup_load_view('formulario-clave-perdida.php', $args);
         break;
 
         // Resetear clave. El usuario ya ha pinchado el enlace de recuperación
         case 'resetear-clave':
             if(isset($_GET['clave-cambiada'])){
                 wp_cache_set('skpu_avisos_acceso', __('Tu clave ha sido cambiada correctamente.', 'skpu'));
-                skpu_cargar_vista('formulario-acceso.php', $args);
+                wup_load_view('formulario-acceso.php', $args);
             }else{
                 wp_cache_set('skpu_avisos_acceso', __('Escribe tu nueva clave de acceso', 'skpu'));
-                skpu_cargar_vista('formulario-resetear-clave.php', $args);
+                wup_load_view('formulario-resetear-clave.php', $args);
             }
         break;
 
@@ -137,7 +137,7 @@ public function mostrar_formulario_acceso(){
                 wp_cache_set('skpu_avisos_acceso', __('You are now logged out.', 'skpu'));
             }
 
-            skpu_cargar_vista('formulario-acceso.php', $args);
+            wup_load_view('formulario-acceso.php', $args);
         }
     }
 
@@ -222,7 +222,7 @@ public function procesar_acceso(){
             $redirigir_hacia = esc_url(wp_unslash($_POST['redirigir_hacia']));
         }else{
             // Si no hay nada esseccionlecido, vamos a la página de mi perfil
-            $redirigir_hacia = get_permalink(get_option('skpu_id_pagina_mi_perfil'));
+            $redirigir_hacia = get_permalink(get_option('wup_page_id_for_show_my_profile'));
         }
 
         wp_redirect($redirigir_hacia);

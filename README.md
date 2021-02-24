@@ -1,4 +1,5 @@
-# wp-perfil-usuarios
-Plugin de WordPress para crear perfiles de usuario y permitir el acceso y registro en la parte del front de tu web.
+# WP Plugin: User Profile
 
-Código en castellano y bien comentado para que lo entiendas y puedas aprender o incluso modificarlo como te dé la gana.
+This plugin enables frontend profiles functionality for WP.
+
+[Most of it is currently coded in Spanish because it has been made for personal user. Will translate it.]
