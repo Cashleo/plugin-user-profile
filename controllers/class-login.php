@@ -174,7 +174,7 @@ public function procesar_acceso(){
         if(is_email($mail_o_usuario_sin_slashes)){
             $usuario = get_user_by('email', sanitize_email($mail_o_usuario_sin_slashes));
         }else{
-            $usuario = get_user_by('acceso', sanitize_user($mail_o_usuario_sin_slashes));
+            $usuario = get_user_by('login', sanitize_user($mail_o_usuario_sin_slashes));
         }
 
         // Comprobar si ha ido bien
@@ -207,7 +207,7 @@ public function procesar_acceso(){
     $credenciales['remember'] = isset($_POST['recordar']);
 
     // Intentar iniciar sesión con los datos proporcionados
-    $usuario = wp_signon($credenciales, is_ssl() );
+    $usuario = wp_signon($credenciales, is_ssl());
 
     if(is_wp_error($usuario)){
         wp_cache_set('skpu_avisos_acceso', __('Datos de acceso incorrectos', 'skpu'));
