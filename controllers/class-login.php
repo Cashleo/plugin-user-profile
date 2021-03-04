@@ -6,13 +6,13 @@ class WUP_Login{
 
 public function __construct(){}
 
-// Activar la clase: Definir shortcode, configurar acciones y filtros
+// Activate class: Setup shortcodes and add some actions and filters
 public static function activar_clase(){
 
     $esta_clase = new self();
 
     // Definir el shortcode para cargar el formulario de acceso
-    add_shortcode('wup_login', [$esta_clase, 'mostrar_formulario_acceso']);
+    add_shortcode('wup_login', [$esta_clase, 'shortcode_login']);
 
     // Agregar acciones al hook de 'init'
     add_action('init', [$esta_clase, 'procesar_acceso']);
@@ -29,7 +29,7 @@ public static function activar_clase(){
 
 
 // Obtener URL de acción según qué acción vamos a hacer
-public function url_de_accion($accion = 'acceso', $redirigir_hacia = ''){
+public function url_de_accion($accion = 'acceso', $redirect_after_login = ''){
 
     // Usamos como base la URL de la página de acceso
     $url_acceso = $this->url_de_acceso();
@@ -83,7 +83,7 @@ public function generar_url_clave_perdida(){
 }
 
 // Función asociada al shortcode [wup_login]
-public function mostrar_formulario_acceso(){
+public function shortcode_login(){
 
     ob_start();
 
@@ -162,13 +162,13 @@ public function procesar_acceso(){
     $credenciales = []; // Meteremos aquí los datos en los siguientes pasos
 
     // Verificar que se ha dado un nombre de usuario o email y existe
-    if(empty($_POST['mail-o-usuario'])){
+    if(empty($_POST['mail-or-user'])){
         wp_cache_set( 'skpu_avisos_acceso',  __('Debes escribir tu correo o tu nombre de usuario.', 'skpu') );
         return;
     }else{
 
         // Obtener usuario a partir del nickname o el correo
-        $mail_o_usuario_sin_slashes = wp_unslash($_POST['mail-o-usuario']);
+        $mail_o_usuario_sin_slashes = wp_unslash($_POST['mail-or-user']);
 
         $usuario = false; // Partimos del valor false por defecto
         if(is_email($mail_o_usuario_sin_slashes)){
@@ -188,11 +188,11 @@ public function procesar_acceso(){
     }
 
     // Verificar que se ha definido la clave
-    if(empty($_POST['clave'])){
+    if(empty($_POST['password'])){
         wp_cache_set( 'skpu_avisos_acceso', __('Por favor escribe tu clave', 'skpu') );
         return;
     }else{
-        $credenciales['user_password'] = $_POST['clave'];
+        $credenciales['user_password'] = $_POST['password'];
     }
 
     // Comprobar el estado de activación del usuario
@@ -204,7 +204,7 @@ public function procesar_acceso(){
     }
 
     // Recordar el inicio de sesión
-    $credenciales['remember'] = isset($_POST['recordar']);
+    $credenciales['remember'] = isset($_POST['remember']);
 
     // Intentar iniciar sesión con los datos proporcionados
     $usuario = wp_signon($credenciales, is_ssl());
@@ -218,14 +218,14 @@ public function procesar_acceso(){
         wp_set_auth_cookie($usuario->ID);
 
         // Hacia donde redirigimos al usuario cuando se ha logueado
-        if(isset($_POST['redirigir_hacia'])){ // Esseccionlecido de manera opcional en el formulario de acceso
-            $redirigir_hacia = esc_url(wp_unslash($_POST['redirigir_hacia']));
+        if(isset($_POST['redirect_after_login'])){ // Esseccionlecido de manera opcional en el formulario de acceso
+            $redirect_after_login = esc_url(wp_unslash($_POST['redirect_after_login']));
         }else{
             // Si no hay nada esseccionlecido, vamos a la página de mi perfil
-            $redirigir_hacia = get_permalink(get_option('wup_page_id_for_show_my_profile'));
+            $redirect_after_login = get_permalink(get_option('wup_page_id_for_show_my_profile'));
         }
 
-        wp_redirect($redirigir_hacia);
+        wp_redirect($redirect_after_login);
         exit;
     }
 
@@ -267,8 +267,8 @@ public function procesar_recuperacion_clave(){
     }elseif('realizar-cambio-clave' == $_POST['skpu_paso_recuperacion_clave']){
 
         // Si existen los datos requeridos
-        if(isset($_POST['clave1']) 
-        && isset($_POST['clave2']) 
+        if(isset($_POST['password1']) 
+        && isset($_POST['password2']) 
         && isset($_POST['key']) 
         && isset($_POST['acceso'])){
 
@@ -281,18 +281,18 @@ public function procesar_recuperacion_clave(){
                 $args['key'] = $_POST['key'];
                 $args['acceso'] = sanitize_user($_POST['acceso']);
 
-                if(empty($_POST['clave1']) || empty($_POST['clave2'])){
+                if(empty($_POST['password1']) || empty($_POST['password2'])){
                     wp_cache_set('skpu_avisos_acceso', __('Debes escribir la clave en los dos campos.', 'skpu'));
                     return;
                 }
 
-                if($_POST['clave1'] !== $_POST['clave2']){
+                if($_POST['password1'] !== $_POST['password2']){
                     wp_cache_set('skpu_avisos_acceso', __('Las claves escritas no coinciden.', 'skpu'));
                     return;
                 }
 
                 // Realizamos el cambio de clave
-                $this->cambiar_clave_usuario_y_enviar_correo($usuario, $_POST['clave1']);
+                $this->cambiar_clave_usuario_y_enviar_correo($usuario, $_POST['password1']);
                 wp_redirect(add_query_arg('clave-cambiada', '1', remove_query_arg(['key', 'acceso'])));
                 exit;
                 

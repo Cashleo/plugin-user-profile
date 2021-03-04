@@ -5,13 +5,13 @@ class WUP_Registration{
 
 public function __construct(){}
 
-// Activar la clase: Definir shortcode, configurar acciones y filtros
+// Activate class: Setup shortcodes and add some actions and filters
 public static function activar_clase(){
 
     $esta_clase = new self();
 
     // Definir el shortcode para cargar el formulario de registro
-    add_shortcode('wup_registration', [$esta_clase, 'mostrar_formulario_registro']);
+    add_shortcode('wup_registration', [$esta_clase, 'shortcode_registration']);
 
     // Agregar acciones al hook de 'init'
     add_action('init', [$esta_clase, 'procesar_registro']);
@@ -19,7 +19,7 @@ public static function activar_clase(){
 }
 
 // Función asociada al shortcode [wup_registration]
-public function mostrar_formulario_registro($atts){
+public function shortcode_registration($atts){
 
     $atts = shortcode_atts(
         [
@@ -97,13 +97,13 @@ public function procesar_registro(){
     $datos_nuevo_usuario = [];
 
     // Verificar email
-    if(!filter_var($_POST['usuario_email'], FILTER_VALIDATE_EMAIL)){
+    if(!filter_var($_POST['user_email'], FILTER_VALIDATE_EMAIL)){
         wp_cache_set('skpu_avisos_registro', '<strong>'.__('Error', 'skpu').':</strong> '.__('Debe especificar un email válido.', 'skpu'));
         return;
     }else{
 
         // Comprobar si el email ya existe
-        $email_limpio = sanitize_email(wp_unslash($_POST['usuario_email']));
+        $email_limpio = sanitize_email(wp_unslash($_POST['user_email']));
         if(email_exists($email_limpio)){
             wp_cache_set('skpu_avisos_registro', '<strong>'.__('Error', 'skpu').':</strong> '.__('Ya existe una cuenta con este correo electrónico.', 'skpu'));
             return;
@@ -138,36 +138,36 @@ public function procesar_registro(){
     }
 
     // Verificar que la clave 1 no está vacía
-    if(empty($_POST['clave1'])){
+    if(empty($_POST['password1'])){
         wp_cache_set('skpu_avisos_registro', '<strong>'.__('Error', 'skpu').':</strong> '.__('Debe escribir una contraseña.', 'skpu'));
         return;
     }
 
     // Verificar que la clave 2 no está vacía
-    if(empty($_POST['clave2'])){
+    if(empty($_POST['password2'])){
         wp_cache_set('skpu_avisos_registro', '<strong>'.__('Error', 'skpu').':</strong> '.__('Debe repetir la contraseña para confirmarla.', 'skpu'));
         return;
     }
 
     // Verify that the 2 passwords match
-    if($_POST['clave1'] != $_POST['clave2']){
+    if($_POST['password1'] != $_POST['password2']){
         wp_cache_set('skpu_avisos_registro', '<strong>'.__('Error', 'skpu').':</strong> '.__('las contraseñas no coinciden.', 'skpu'));
         return;
     }else{
-        $datos_nuevo_usuario['user_pass'] = $_POST['clave1']; // No lo limpiamos, se aplicará un hash
+        $datos_nuevo_usuario['user_pass'] = $_POST['password1']; // No lo limpiamos, se aplicará un hash
     }
 
     // Asignar rol (dejamos el filtro ahí por si alguien quiere modificar el rol)
     $datos_nuevo_usuario['role'] = apply_filters('skpu_fitro_para_cambiar_rol', 'subscriber');
     
     // Nombre de pila
-    if(isset($_POST['usuario_nombre_pila'])){
-        $datos_nuevo_usuario['first_name'] = sanitize_text_field(wp_unslash($_POST['usuario_nombre_pila']));
+    if(isset($_POST['user_first_name'])){
+        $datos_nuevo_usuario['first_name'] = sanitize_text_field(wp_unslash($_POST['user_first_name']));
     }
 
     // Apellidos
-    if(isset($_POST['usuario_apellidos'])){
-        $datos_nuevo_usuario['last_name'] = sanitize_text_field(wp_unslash($_POST['usuario_apellidos']));
+    if(isset($_POST['user_last_name'])){
+        $datos_nuevo_usuario['last_name'] = sanitize_text_field(wp_unslash($_POST['user_last_name']));
     }
 
     // Insertar usuario en WordPress
@@ -182,12 +182,12 @@ public function procesar_registro(){
         do_action('skpu_accion_cuando_se_registra_usuario', $id_del_usuario_creado);
 
         // Automáticamente meter los metadatos extra si hay
-        foreach($_POST as $input_nombre => $input_valor){
+        foreach($_POST as $input_name => $input_value){
             // Compruebo si el nombre del campo empieza por "meta-loquesea"
             if(substr($input_name,0,5)=='meta-'){
-                $nombre_metadato = substr($input_name,5);
-                $valor_metadato = sanitize_text_field($_POST[$input_nombre]);
-                add_user_meta($id_del_usuario_creado, $nombre_metadato, $valor_metadato);
+                $metadata_name = substr($input_name,5);
+                $metadata_value = sanitize_text_field($input_value);
+                add_user_meta($id_del_usuario_creado, $metadata_name, $metadata_value);
             }
         }
 
@@ -198,20 +198,20 @@ public function procesar_registro(){
         $this->enviar_email_activacion($id_del_usuario_creado);
 
         // Guardar el sexo si se ha establecido
-        if(!empty($_POST['usuario_sexo'])){ // Empty detecta si está vacío o no existe
+        if(!empty($_POST['user_gender'])){ // Empty detecta si está vacío o no existe
             // Comprobar si el usuario ya existe
-            $usuario_sexo = sanitize_text_field(wp_unslash($_POST['usuario_sexo']));
-            add_user_meta($id_del_usuario_creado, 'skpu_usuario_sexo', $usuario_sexo, true);
+            $user_gender = sanitize_text_field(wp_unslash($_POST['user_gender']));
+            add_user_meta($id_del_usuario_creado, 'gender', $user_gender, true);
         }
 
         // Redirigir a una página específica si se ha indicado en el form de registro
-        if(isset($_POST['redireccion_post_registro'])){
+        if(isset($_POST['redirect_after_registration'])){
 
             // Si estamos redirigiendo es porque ya lo queremos también con sesión iniciada
             wp_set_current_user($id_del_usuario_creado);
             wp_set_auth_cookie($id_del_usuario_creado);
 
-            wp_safe_redirect($_POST['redireccion_post_registro']);
+            wp_safe_redirect($_POST['redirect_after_registration']);
             exit();
         }
         

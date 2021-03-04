@@ -4,7 +4,7 @@ $user = wp_get_current_user();
 
 // Cargar las secciones editables
 $skpu_secciones = apply_filters(
-    'skpu_secciones',
+    'wup_editable_sections',
     []
 );
 
@@ -39,7 +39,7 @@ $content_class .= ' '.$skpu_seccion['content_class'];
 
 <div class="skpu-seccion<?php echo esc_attr($content_class); ?>" id="<?php echo esc_attr($skpu_seccion['id']); ?>">
 
-    <form method="post" action="<?php echo esc_url($Perfil->url_de_editar_mi_perfil()).'#'.esc_attr($skpu_seccion['id']); ?>">
+    <form method="post" action="<?php echo esc_url($Perfil->url_de_editar_mi_perfil()).'#'.esc_attr($skpu_seccion['id']); ?>" enctype='multipart/form-data'>
         <?php
             /* check if callback function exists */
         if (isset($skpu_seccion['callback']) && function_exists($skpu_seccion['callback'])) {
