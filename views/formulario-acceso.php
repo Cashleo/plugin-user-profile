@@ -1,5 +1,5 @@
 <?php
-if(isset($_GET['cuenta_activada'])){
+if(isset($_GET['a'])){
 	echo '<div class="skpu-mensaje-ok">'.esc_html(esc_attr__('Tu cuenta se ha activado correctamente.', 'skpu')).'</div>';
 }
 

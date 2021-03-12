@@ -138,13 +138,17 @@ function default_editable_fields_password($campos){
 public function shortcode_show_my_profile(){
 
     // Si el usuario no ha accedido, lo llevamos a la página de acceso
-    $this->redirigir_usuario_no_identificado();
+    if(is_user_logged_in()){
+        $view = 'mi-perfil.php';
+    }else{
+        $view = 'formulario-acceso.php';
+    }
 
     $perfil_page = get_option('wup_page_id_for_show_my_profile');
 
     ob_start();
 
-    wup_load_view('mi-perfil.php');
+    wup_load_view($view);
 
     return ob_get_clean();
 }
@@ -153,33 +157,19 @@ public function shortcode_show_my_profile(){
 public function shortcode_edit_my_profile(){
 
     // Si el usuario no ha accedido, lo llevamos a la página de acceso
-    $this->redirigir_usuario_no_identificado();
+    if(is_user_logged_in()){
+        $view = 'editar-mi-perfil.php';
+    }else{
+        $view = 'formulario-acceso.php';
+    }
 
     ob_start();
 
-    wup_load_view('editar-mi-perfil.php');
+    wup_load_view($view);
 
     return ob_get_clean();
 }
 
-public function redirigir_usuario_no_identificado(){
-
-    // Si está logueado, ignoramos el resto de la función
-    if(is_user_logged_in()){
-        return;
-    }
-
-    $id_pagina_acceso = get_option('wup_page_id_for_login');
-
-    if($id_pagina_acceso){
-        $url_redirigir_usuario_no_identificado = get_permalink($id_pagina_acceso);
-    }else{
-        $url_redirigir_usuario_no_identificado = site_url();
-    }
-
-    wp_redirect($url_redirigir_usuario_no_identificado);
-    exit;
-}
 
 // Obtener la URL de la página de mi perfil
 public function url_de_mi_perfil(){

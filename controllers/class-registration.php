@@ -158,7 +158,7 @@ public function procesar_registro(){
     }
 
     // Asignar rol (dejamos el filtro ahí por si alguien quiere modificar el rol)
-    $datos_nuevo_usuario['role'] = apply_filters('skpu_fitro_para_cambiar_rol', 'subscriber');
+    $datos_nuevo_usuario['role'] = apply_filters('wup_default_registration_role', 'subscriber');
     
     // Nombre de pila
     if(isset($_POST['user_first_name'])){
@@ -179,7 +179,7 @@ public function procesar_registro(){
     }else{
 
         // Hacer accion cuando el usuario se registre
-        do_action('skpu_accion_cuando_se_registra_usuario', $id_del_usuario_creado);
+        do_action('wup_action_after_user_registration', $id_del_usuario_creado);
 
         // Automáticamente meter los metadatos extra si hay
         foreach($_POST as $input_name => $input_value){
@@ -192,10 +192,11 @@ public function procesar_registro(){
         }
 
         // Establecer estado como pendiente de activación
-        add_user_meta($id_del_usuario_creado, 'skpu_estado_activacion_usuario', 'activacion_pendiente');
+        //add_user_meta($id_del_usuario_creado, 'wup_user_activation_status', 'activacion_pendiente');
+        add_user_meta($id_del_usuario_creado, 'wup_user_activation_status', 'usuario_activado');
  
         // Enviamos el email de activación
-        $this->enviar_email_activacion($id_del_usuario_creado);
+        //$this->enviar_email_activacion($id_del_usuario_creado);
 
         // Guardar el sexo si se ha establecido
         if(!empty($_POST['user_gender'])){ // Empty detecta si está vacío o no existe
@@ -234,20 +235,20 @@ public function enviar_email_activacion($id_usuario){
         $codigo_activacion = sha1(time());
 
         // Guardar el código junto a los metadatos del usuario
-        update_user_meta($id_usuario, 'skpu_codigo_activacion_usuario', $codigo_activacion, true);
+        update_user_meta($id_usuario, 'wup_user_activation_code', $codigo_activacion, true);
 
         $url_de_acceso = get_permalink(get_option('wup_page_id_for_login'));
 
         $nombre_del_sitio = wp_specialchars_decode(get_option('blogname'), ENT_QUOTES);
         $enlace_activacion = add_query_arg(
             [
-                'codigo'  => $codigo_activacion,
-                'id_usuario' => $id_usuario,
+                'c'  => $codigo_activacion,
+                'u' => $id_usuario,
             ],
             $url_de_acceso
         );
 
-        $mensaje_activacion = __('Haz clic en el enlace para activar tu cuente:').'<br><br>';
+        $mensaje_activacion = __('Haz clic en el enlace para activar tu cuenta:').'<br><br>';
         $mensaje_activacion .= '<a href="'.$enlace_activacion.'">'.$enlace_activacion.'</a>';
         $headers = ['Content-Type: text/html; charset=UTF-8'];
         

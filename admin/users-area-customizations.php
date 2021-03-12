@@ -21,15 +21,15 @@ function skpu_agregar_campos_personalizados_zona_usuario($usuario){
 <table class="form-table">
     <tr>
         <th>
-            <label for="skpu_estado_activacion_usuario"><?php _e('Estado', 'skpu'); ?></label>
+            <label for="wup_user_activation_status"><?php _e('Estado', 'skpu'); ?></label>
         </th>
         <td>
             <?php
-            $estado_activacion_usuario = esc_attr(get_user_meta($usuario->ID, 'skpu_estado_activacion_usuario', true));
+            $estado_activacion_usuario = esc_attr(get_user_meta($usuario->ID, 'wup_user_activation_status', true));
             ?>
-            <select name="skpu_estado_activacion_usuario">
+            <select name="wup_user_activation_status">
                 <option value="activacion_pendiente" <?php echo ($estado_activacion_usuario=='activacion_pendiente')?'selected':'';?>><?php _e('Pendiente', 'skpu'); ?></option>
-                <option value="usuario_activado" <?php echo ($estado_activacion_usuario=='verified')?'selected':'';?>><?php _e('Activado', 'skpu'); ?></option>
+                <option value="usuario_activado" <?php echo ($estado_activacion_usuario=='usuario_activado')?'selected':'';?>><?php _e('Activado', 'skpu'); ?></option>
             </select>
         </td>
     </tr>
@@ -41,14 +41,14 @@ function skpu_agregar_campos_personalizados_zona_usuario($usuario){
 
 function skpu_guardar_campos_personalizados_zona_usuario($id_usuario){
     if(current_user_can('edit_user', $id_usuario)){
-        update_user_meta($id_usuario, 'skpu_estado_activacion_usuario', sanitize_text_field($_POST['skpu_estado_activacion_usuario']));
+        update_user_meta($id_usuario, 'wup_user_activation_status', sanitize_text_field($_POST['wup_user_activation_status']));
     }
 }
 
 
 
 function agregar_columnas_tabla_usuarios($columnas){
-    $columnas['skpu_estado_activacion_usuario'] = __('Estado', 'skpu');
+    $columnas['wup_user_activation_status'] = __('Estado', 'skpu');
     return $columnas;
 }
 
@@ -56,8 +56,8 @@ function agregar_columnas_tabla_usuarios($columnas){
 function contenido_columnas_tabla_usuarios($valor_columna, $nombre_columna, $id_usuario){
     $status='';
     switch($nombre_columna){
-        case 'skpu_estado_activacion_usuario':
-            $estado_activacion_usuario = get_user_meta($id_usuario, 'skpu_estado_activacion_usuario', true);
+        case 'wup_user_activation_status':
+            $estado_activacion_usuario = get_user_meta($id_usuario, 'wup_user_activation_status', true);
             if('usuario_activado' == $estado_activacion_usuario) {
                 $status = __('Activado', 'skpu');
             }elseif('activacion_pendiente' == $estado_activacion_usuario) {

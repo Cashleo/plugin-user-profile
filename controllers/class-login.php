@@ -87,58 +87,44 @@ public function shortcode_login(){
 
     ob_start();
 
-    // Si ya ha iniciado sesión, mostrar la plantilla de usuario ya identificado
-    if(is_user_logged_in()){
+    $url_pagina_acceso = $this->url_de_acceso();
 
-        wup_load_view(
-            'aviso-usuario-identificado.php',
-            [
-                'user' => wp_get_current_user(),
-            ]
-        );
+    $accion = isset($_GET['accion']) ? $_GET['accion'] : 'acceso';
+    $args = [
+        'accion_url' => $url_pagina_acceso,
+    ];
 
-    // Si no, mostrar la plantilla correspondiente dependiendo de la acción actual
-    }else{
+    // Mostrar contenido según la acción que vayamos a realizar
+    switch($accion){
 
-        $url_pagina_acceso = $this->url_de_acceso();
+    // Clave perdida. Pedimos usuario para poder enviarle un correo de recuperación
+    case 'clave-perdida':
+        wp_cache_set( 'skpu_avisos_acceso', __('No te preocupes, escribe aquí tu usuario o email y recibirás un enlace para poder recuperar tu clave.', 'skpu') );
+        wup_load_view('formulario-clave-perdida.php', $args);
+    break;
 
-        $accion = isset($_GET['accion']) ? $_GET['accion'] : 'acceso';
-        $args = [
-            'accion_url' => $url_pagina_acceso,
-        ];
-
-        // Mostrar contenido según la acción que vayamos a realizar
-        switch($accion){
-
-        // Clave perdida. Pedimos usuario para poder enviarle un correo de recuperación
-        case 'clave-perdida':
-            wp_cache_set( 'skpu_avisos_acceso', __('No te preocupes, escribe aquí tu usuario o email y recibirás un enlace para poder recuperar tu clave.', 'skpu') );
-            wup_load_view('formulario-clave-perdida.php', $args);
-        break;
-
-        // Resetear clave. El usuario ya ha pinchado el enlace de recuperación
-        case 'resetear-clave':
-            if(isset($_GET['clave-cambiada'])){
-                wp_cache_set('skpu_avisos_acceso', __('Tu clave ha sido cambiada correctamente.', 'skpu'));
-                wup_load_view('formulario-acceso.php', $args);
-            }else{
-                wp_cache_set('skpu_avisos_acceso', __('Escribe tu nueva clave de acceso', 'skpu'));
-                wup_load_view('formulario-resetear-clave.php', $args);
-            }
-        break;
-
-        // Por defecto mostramos el formulario de acceso
-        default:
-            if(isset($_GET['enviado-correo-recuperacion'])){
-                wp_cache_set('skpu_avisos_acceso', __('Check your e-mail for the confirmation link.', 'skpu'));
-            }
-
-            if(isset($_GET['loggedout'])){
-                wp_cache_set('skpu_avisos_acceso', __('You are now logged out.', 'skpu'));
-            }
-
+    // Resetear clave. El usuario ya ha pinchado el enlace de recuperación
+    case 'resetear-clave':
+        if(isset($_GET['clave-cambiada'])){
+            wp_cache_set('skpu_avisos_acceso', __('Tu clave ha sido cambiada correctamente.', 'skpu'));
             wup_load_view('formulario-acceso.php', $args);
+        }else{
+            wp_cache_set('skpu_avisos_acceso', __('Escribe tu nueva clave de acceso', 'skpu'));
+            wup_load_view('formulario-resetear-clave.php', $args);
         }
+    break;
+
+    // Por defecto mostramos el formulario de acceso
+    default:
+        if(isset($_GET['enviado-correo-recuperacion'])){
+            wp_cache_set('skpu_avisos_acceso', __('Check your e-mail for the confirmation link.', 'skpu'));
+        }
+
+        if(isset($_GET['loggedout'])){
+            wp_cache_set('skpu_avisos_acceso', __('You are now logged out.', 'skpu'));
+        }
+
+        wup_load_view('formulario-acceso.php', $args);
     }
 
     return ob_get_clean();
@@ -196,7 +182,7 @@ public function procesar_acceso(){
     }
 
     // Comprobar el estado de activación del usuario
-    $estado_activacion_usuario = get_user_meta($usuario->ID, 'skpu_estado_activacion_usuario', true);
+    $estado_activacion_usuario = get_user_meta($usuario->ID, 'wup_user_activation_status', true);
 
     if($estado_activacion_usuario == 'activacion_pendiente'){
         wp_cache_set( 'skpu_avisos_acceso', '<strong>'.__('Error', 'skpu').':</strong> '.__('Por favor, verifica tu cuenta', 'skpu') );
@@ -351,37 +337,36 @@ public function enviar_correo_recuperar_clave(){
 public function procesar_activacion_usuario(){
 
     // Si no existe el id de usuario o el código en la URL, no hay que procesar la activación
-    if((!isset($_GET['id_usuario'])) or (!isset($_GET['codigo']))){
+    if((!isset($_GET['u'])) or (!isset($_GET['c']))){
         return;
     }
 
-    $id_usuario = intval($_GET['id_usuario']);
+    $id_usuario = intval($_GET['u']);
 
     // Sacar el código de activación que tenemos guardado en la base de datos
-    $codigo_activacion_correcto = get_user_meta($id_usuario, 'skpu_codigo_activacion_usuario', true);
+    $codigo_activacion_correcto = get_user_meta($id_usuario, 'wup_user_activation_code', true);
 
     if(!$codigo_activacion_correcto){
         wp_cache_set('skpu_avisos_acceso', __('El enlace de activación ha caducado', 'skpu'));
         return;
     }
 
-    $codigo_en_el_enlace = wp_unslash($_GET['codigo']);
+    $codigo_en_el_enlace = wp_unslash($_GET['c']);
 
     // Comprobar si el código correcto coincide con el del enlace
     if($codigo_activacion_correcto != $codigo_en_el_enlace){
-        wp_cache_set('skpu_avisos_acceso', 'Correcto: '.$codigo_activacion_correcto.'<br>Enlace: '.$codigo_en_el_enlace);
-        //wp_cache_set('skpu_avisos_acceso', __('ABC El enlace de activación ha caducado', 'skpu'));
+        wp_cache_set('skpu_avisos_acceso', 'Código de activación incorrecto');
         return;
     }
 
     // Esseccionlecer como usuario activo
-    update_user_meta($id_usuario, 'skpu_estado_activacion_usuario', 'usuario_activado');
+    update_user_meta($id_usuario, 'wup_user_activation_status', 'usuario_activado');
 
     // Borrar el metadato del código de activación
-    delete_user_meta($id_usuario, 'skpu_codigo_activacion_usuario');
+    delete_user_meta($id_usuario, 'wup_user_activation_code');
 
     // Redirigir a la página de acceso con el aviso de activar cuenta
-    wp_redirect(add_query_arg(['cuenta_activada' => '1'], $this->url_de_acceso()));
+    wp_redirect(add_query_arg(['a' => '1'], $this->url_de_acceso()));
     exit;
 
 }
