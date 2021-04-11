@@ -1,26 +1,27 @@
 <?php
 /**
  * Plugin Name: Winni User Profile
- * Description: WP user profile functionality
+ * Description: Clean WP user profile functionality with no JS/CSS bloat.
  * Version:     1
- * Author:      WinniPress
+ * Author:      Álvaro Franz
  * Text Domain: wup
+ * Domain Path: /translations/
 */
 
-// Some helper functions
+// Plugin helper functions
 require_once plugin_dir_path(__FILE__).'controllers/functions.php';
 
-// Load Login class and fire hooks
+// Load Login class and setup hooks
 require_once plugin_dir_path(__FILE__).'controllers/class-login.php';
-WUP_Login::activar_clase();
+WUP_Login::setup_hooks();
 
-// Load Registration class and fire hooks
+// Load Registration class and setup hooks
 require_once plugin_dir_path(__FILE__).'controllers/class-registration.php';
-WUP_Registration::activar_clase();
+WUP_Registration::setup_hooks();
 
-// Load Profile class and fire hooks
+// Load Profile class and setup hooks
 require_once plugin_dir_path(__FILE__).'controllers/class-profile.php';
-WUP_Profile::activar_clase();
+WUP_Profile::setup_hooks();
 
 // Load customizations for the admin area
 if(is_admin()){
@@ -28,5 +29,11 @@ if(is_admin()){
     require_once plugin_dir_path(__FILE__).'admin/users-area-customizations.php';
 }
 
-// Hide admin bar
+// Load text domain
+add_action('plugins_loaded', 'wup_load_text_domain');
+function wup_load_text_domain(){
+    load_plugin_textdomain('wup', false /* Deprecated argument */ , dirname(plugin_basename(__FILE__)) . '/translations/');
+}
+
+// Disable admin bar
 add_filter('show_admin_bar', '__return_false');

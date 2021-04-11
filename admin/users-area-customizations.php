@@ -1,35 +1,35 @@
 <?php
 
-// ACCIONES Y FILTROS
+// ACTIONS AND FILTERS
 
-// Agregar campos personalizados a la zona de admin de editar usuario
-add_action('show_user_profile', 'skpu_agregar_campos_personalizados_zona_usuario'); // Mi usuario
-add_action('edit_user_profile', 'skpu_agregar_campos_personalizados_zona_usuario'); // Otro usuario
+// Add custom fields to the edit user screen
+add_action('show_user_profile', 'wup_custom_fields_edit_user_screen'); // My user
+add_action('edit_user_profile', 'wup_custom_fields_edit_user_screen'); // Other user
 
-// Guardar los campos personalizados al darle al botón de Guardar 
-add_action('personal_options_update', 'skpu_guardar_campos_personalizados_zona_usuario'); // Mi usuario
-add_action('edit_user_profile_update', 'skpu_guardar_campos_personalizados_zona_usuario'); // Otro usuario
+// Handle saving the fields 
+add_action('personal_options_update', 'wup_handle_user_custom_fields_save'); // My user
+add_action('edit_user_profile_update', 'wup_handle_user_custom_fields_save'); // Other user
 
-// Agregar columnas personalizadas a la tabla de Usuarios en la zona admin
-add_filter('manage_users_columns', 'agregar_columnas_tabla_usuarios'); // Nombre columna
-add_filter('manage_users_custom_column', 'contenido_columnas_tabla_usuarios', 10, 3); // Contenido columna
+// Add custom columns to the user table
+add_filter('manage_users_columns', 'wup_add_users_table_columns'); // Create columns
+add_filter('manage_users_custom_column', 'wup_populate_users_table_columns', 10, 3); // Populate columns
 
-// FUNCIONES ASOCIADAS A LAS ACCIONES Y FILTROS
+// ACTIONS AND FILTERS CALLBACKS
 
-function skpu_agregar_campos_personalizados_zona_usuario($usuario){
+function wup_custom_fields_edit_user_screen($user){
 ?>
 <table class="form-table">
     <tr>
         <th>
-            <label for="wup_user_activation_status"><?php _e('Estado', 'skpu'); ?></label>
+            <label for="wup_user_activation_status"><?php _e('Status', 'wup'); ?></label>
         </th>
         <td>
             <?php
-            $estado_activacion_usuario = esc_attr(get_user_meta($usuario->ID, 'wup_user_activation_status', true));
+            $user_activation_status = get_user_meta($user->ID, 'wup_user_activation_status', true);
             ?>
             <select name="wup_user_activation_status">
-                <option value="activacion_pendiente" <?php echo ($estado_activacion_usuario=='activacion_pendiente')?'selected':'';?>><?php _e('Pendiente', 'skpu'); ?></option>
-                <option value="usuario_activado" <?php echo ($estado_activacion_usuario=='usuario_activado')?'selected':'';?>><?php _e('Activado', 'skpu'); ?></option>
+                <option value="pending_activation" <?php echo ($user_activation_status=='pending_activation')?'selected':'';?>><?php _e('Pending', 'wup'); ?></option>
+                <option value="is_active" <?php echo ($user_activation_status=='is_active')?'selected':'';?>><?php _e('Active', 'wup'); ?></option>
             </select>
         </td>
     </tr>
@@ -39,35 +39,34 @@ function skpu_agregar_campos_personalizados_zona_usuario($usuario){
 }
 
 
-function skpu_guardar_campos_personalizados_zona_usuario($id_usuario){
-    if(current_user_can('edit_user', $id_usuario)){
-        update_user_meta($id_usuario, 'wup_user_activation_status', sanitize_text_field($_POST['wup_user_activation_status']));
+function wup_handle_user_custom_fields_save($user_id){
+    if(current_user_can('edit_user', $user_id)){
+        update_user_meta($user_id, 'wup_user_activation_status', sanitize_text_field($_POST['wup_user_activation_status']));
     }
 }
 
 
-
-function agregar_columnas_tabla_usuarios($columnas){
-    $columnas['wup_user_activation_status'] = __('Estado', 'skpu');
-    return $columnas;
+function wup_add_users_table_columns($columns){
+    $columns['wup_user_activation_status'] = __('Status', 'wup');
+    return $columns;
 }
 
 
-function contenido_columnas_tabla_usuarios($valor_columna, $nombre_columna, $id_usuario){
+function wup_populate_users_table_columns($column_content, $column_name, $user_id){
     $status='';
-    switch($nombre_columna){
+    switch($column_name){
         case 'wup_user_activation_status':
-            $estado_activacion_usuario = get_user_meta($id_usuario, 'wup_user_activation_status', true);
-            if('usuario_activado' == $estado_activacion_usuario) {
-                $status = __('Activado', 'skpu');
-            }elseif('activacion_pendiente' == $estado_activacion_usuario) {
-                $status = __('Pendiente', 'skpu');
+            $user_activation_status = get_user_meta($user_id, 'wup_user_activation_status', true);
+            if('is_active' == $user_activation_status) {
+                $status = __('Active', 'wup');
+            }elseif('pending_activation' == $user_activation_status) {
+                $status = __('Pending', 'wup');
             }else{
-                $status = __('Registro via WP', 'skpu');
+                $status = __('Other', 'wup');
             }
             return $status;
         break;
     }
 
-    return $valor_columna;
+    return $column_content;
 }

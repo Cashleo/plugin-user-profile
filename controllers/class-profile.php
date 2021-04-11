@@ -10,141 +10,139 @@ private $messages = [];
 public function __construct(){}
 
 // Activate class: Setup shortcodes and add some actions and filters
-public static function activar_clase(){
+public static function setup_hooks(){
 
-    $esta_clase = new self();
+    $this_class = new self();
 
-    add_shortcode('wup_show_my_profile', [$esta_clase, 'shortcode_show_my_profile']);
-    add_shortcode('wup_edit_my_profile', [$esta_clase, 'shortcode_edit_my_profile']);
+    add_shortcode('wup_show_my_profile', [$this_class, 'shortcode_show_my_profile']);
+    add_shortcode('wup_edit_my_profile', [$this_class, 'shortcode_edit_my_profile']);
 
-    add_action('skpu_hook_antes_de_mostrar_secciones', [$esta_clase, 'save_editable_fields'], 5, 2);
-    add_action('skpu_hook_antes_de_mostrar_secciones', [$esta_clase, 'save_password'], 10, 2);
+    add_action('wup_hook_before_displaying_sections', [$this_class, 'save_editable_fields'], 5, 2);
+    add_action('wup_hook_before_displaying_sections', [$this_class, 'save_password'], 10, 2);
 
-    add_filter('wup_editable_sections', [$esta_clase, 'add_profile_section'], 10);
-    add_filter('wup_editable_sections', [$esta_clase, 'add_avatar_section'], 10);
-    add_filter('wup_editable_sections', [$esta_clase, 'add_password_seccion'], 20);
+    add_filter('wup_editable_sections', [$this_class, 'add_profile_section'], 10);
+    add_filter('wup_editable_sections', [$this_class, 'add_avatar_section'], 10);
+    add_filter('wup_editable_sections', [$this_class, 'add_password_section'], 20);
 
-    add_filter('wup_editable_fields_profile',  [$esta_clase, 'default_editable_fields_profile'], 10);
-    add_filter('wup_editable_fields_avatar',   [$esta_clase, 'default_editable_fields_avatar'], 10);
-    add_filter('wup_editable_fields_password', [$esta_clase, 'default_editable_fields_password'], 10);
+    add_filter('wup_editable_fields_profile',  [$this_class, 'default_editable_fields_profile'], 10);
+    add_filter('wup_editable_fields_avatar',   [$this_class, 'default_editable_fields_avatar'], 10);
+    add_filter('wup_editable_fields_password', [$this_class, 'default_editable_fields_password'], 10);
 
 }
 
-// Add the perfil seccion to the perfil output
-public function add_profile_section($secciones){
+// Add the profile section
+public function add_profile_section($sections){
 
-    $secciones[] = [
+    $sections[] = [
         'id'            => 'profile',
-        'label'         => __('Profile', 'skpu'),
-        'seccion_class' => 'perfil-seccion',
-        'content_class' => 'perfil-content'
+        'label'         => __('Profile', 'wup'),
+        'section_class' => 'profile-section',
+        'content_class' => 'profile-content'
     ];
 
-    return $secciones;
+    return $sections;
 }
 
-// Add the picture seccion to the perfil output
-public function add_avatar_section($secciones){
+// Add the avatar section
+public function add_avatar_section($sections){
 
-    $secciones[] = [
+    $sections[] = [
         'id'            => 'avatar',
-        'label'         => __('Avatar', 'skpu'),
-        'seccion_class' => 'avatar-seccion',
+        'label'         => __('Avatar', 'wup'),
+        'section_class' => 'avatar-section',
         'content_class' => 'avatar-content'
     ];
 
-    return $secciones;
+    return $sections;
 }
 
 
-// Adds the password seccion to the perfil output
-public function add_password_seccion($secciones){
+// Adds the password section
+public function add_password_section($sections){
 
-    $secciones[] = [
+    $sections[] = [
         'id'            => 'password',
-        'label'         => __('Password', 'skpu'),
-        'seccion_class' => 'password-seccion',
+        'label'         => __('Password', 'wup'),
+        'section_class' => 'password-section',
         'content_class' => 'password-content'
     ];
 
-    return $secciones;
+    return $sections;
 }
 
-// Default perfil seccion campos
-function default_editable_fields_profile($campos){
-    $campos[] = [
+// Default perfil section fields
+function default_editable_fields_profile($fields){
+    $fields[] = [
         'id'      => 'user_email',
-        'label'   => __('Email Address', 'skpu'),
-        'desc'    => __('Edit your email address - used for resetting your password etc.', 'skpu'),
+        'label'   => __('Email Address', 'wup'),
+        'desc'    => __('Edit your email address', 'wup'),
         'type'    => 'email',
         'classes' => 'user_email',
     ];
 
-    $campos[] = [
+    $fields[] = [
         'id'      => 'first_name',
-        'label'   => __('First Name', 'skpu'),
-        'desc'    => __('Edit your first name.', 'skpu'),
+        'label'   => __('First Name', 'wup'),
+        'desc'    => __('Edit your first name', 'wup'),
         'type'    => 'text',
         'classes' => 'first_name',
     ];
 
-    $campos[] = [
+    $fields[] = [
         'id'      => 'last_name',
-        'label'   => __('Last Name', 'skpu'),
-        'desc'    => __('Edit your last name.', 'skpu'),
+        'label'   => __('Last Name', 'wup'),
+        'desc'    => __('Edit your last name', 'wup'),
         'type'    => 'text',
         'classes' => 'last_name',
     ];
 
-    $campos[] = [
+    $fields[] = [
         'id'      => 'user_url',
-        'label'   => __('URL', 'skpu'),
-        'desc'    => __('Edit your perfil associated URL.', 'skpu'),
+        'label'   => __('URL', 'wup'),
+        'desc'    => __('Edit your profile associated URL', 'wup'),
         'type'    => 'text',
         'classes' => 'user_url',
     ];
 
-    return $campos;
+    return $fields;
 }
 
-// Default avatar seccion campos
-function default_editable_fields_avatar($campos){
-    $campos[] = [
+// Default avatar section fields
+function default_editable_fields_avatar($fields){
+    $fields[] = [
         'id'      => 'avatar',
-        'label'   => __('Avatar', 'skpu'),
-        'desc'    => __('User profile image', 'skpu'),
+        'label'   => __('Avatar', 'wup'),
+        'desc'    => __('User profile image', 'wup'),
         'type'    => 'image',
         'classes' => 'avatar',
     ];
 
-    return $campos;
+    return $fields;
 }
 
-// Default password seccion campos
-function default_editable_fields_password($campos){
-    $campos[] = [
+// Default password section fields
+function default_editable_fields_password($fields){
+    $fields[] = [
         'id'      => 'user_pass',
-        'label'   => __('Password', 'skpu'),
-        'desc'    => __('New Password', 'skpu'),
+        'label'   => __('Password', 'wup'),
+        'desc'    => __('New password', 'wup'),
         'type'    => 'password',
         'classes' => 'user_pass',
     ];
 
-    return $campos;
+    return $fields;
 }
 
 
-// Mostrar la vista de Mi Perfil
+// [wup_show_my_profile] shortcode callback
 public function shortcode_show_my_profile(){
 
-    // Si el usuario no ha accedido, lo llevamos a la página de acceso
+    // If the user is not logged in, show login form
     if(is_user_logged_in()){
-        $view = 'mi-perfil.php';
+        $view = 'my-profile.php';
     }else{
-        $view = 'formulario-acceso.php';
+        $view = 'form-login.php';
     }
-
-    $perfil_page = get_option('wup_page_id_for_show_my_profile');
 
     ob_start();
 
@@ -153,14 +151,14 @@ public function shortcode_show_my_profile(){
     return ob_get_clean();
 }
 
-// Mostrar la vista de Editar Mi Perfil
+// [wup_edit_my_profile] shortcode callback
 public function shortcode_edit_my_profile(){
 
-    // Si el usuario no ha accedido, lo llevamos a la página de acceso
+    // If the user is not logged in, show login form
     if(is_user_logged_in()){
-        $view = 'editar-mi-perfil.php';
+        $view = 'form-edit-my-profile.php';
     }else{
-        $view = 'formulario-acceso.php';
+        $view = 'form-login.php';
     }
 
     ob_start();
@@ -171,107 +169,55 @@ public function shortcode_edit_my_profile(){
 }
 
 
-// Obtener la URL de la página de mi perfil
-public function url_de_mi_perfil(){
-    $id_pagina_mi_perfil = get_option('wup_page_id_for_show_my_profile');
-    if(!$id_pagina_mi_perfil){
+// Get my profile URL
+public function my_profile_url(){
+    $my_profile_page_id = get_option('wup_page_id_for_show_my_profile');
+    if(!$my_profile_page_id){
         return false;
     }
-    return get_permalink($id_pagina_mi_perfil);
+    return get_permalink($my_profile_page_id);
 }
 
-// Obtener la URL de la página de editar mi perfil
-public function url_de_editar_mi_perfil(){
-    $id_pagina_editar_mi_perfil = get_option('wup_page_id_for_edit_my_profile');
-    if(!$id_pagina_editar_mi_perfil){
+// Get the edit my profile URL
+public function edit_my_profile_url(){
+    $edit_my_profile_page_id = get_option('wup_page_id_for_edit_my_profile');
+    if(!$edit_my_profile_page_id){
         return false;
     }
-    return get_permalink($id_pagina_editar_mi_perfil);
+    return get_permalink($edit_my_profile_page_id);
 }
 
+// Display editable section
+public function display_editable_section($section){
 
-// Mostrar seccion de campos editables
-public function mostrar_seccion_editable($seccion){
-
-    // Build an array of campos to output
-    $campos = apply_filters(
-        'wup_editable_fields_'.$seccion['id'],
+    // Build an array of fields to output
+    $fields = apply_filters(
+        'wup_editable_fields_'.$section['id'],
         [],
         get_current_user_ID()
     );
 
-    // Check we have some campos
-    if (!empty($campos)) {
+    // Check we have some fields
+    if(empty($fields)){
+        return;
+    }
 
-        /* output a wrapper div and form opener */ ?>
-
-			<div class="skpu-campos">
-
-				<?php
-
-                    /* start a counter */
-                    $counter = 1;
-
-        /* get the total number of campos in the array */
-        $total_campos = count($campos);
-
-        /* lets loop through our campos array */
-        foreach ($campos as $campo) {
-
-                        /* set a base counting class */
-            $count_class = ' skpu-'.$campo['type'].'-campo skpu-campo-'.$counter;
-
-            /* build our counter class - check if the counter is 1 */
-            if (1 === $counter) {
-
-                            /* this is the first campo element */
-                $counting_class = $count_class.' first';
-
-            /* is the counter equal to the total number of campos */
-            } elseif ($counter === $total_campos) {
-
-                            /* this is the last campo element */
-                $counting_class = $count_class.' last';
-
-            /* if not first or last */
-            } else {
-
-                            /* set to base count class only */
-                $counting_class = $count_class;
-            }
-
-            /* build a var for classes to add to the wrapper */
-            $classes = (empty($campo['classes'])) ? '' : ' '.$campo['classes'];
-
-            /* build ful classes array */
-            $classes = $counting_class.$classes;
-
-            /* output the campo */
-            $this->mostrar_campo_editable($campo, $classes, $seccion['id'], get_current_user_id());
-
-            /* increment the counter */
-            $counter++;
-        } // end for each campo
-
-                    /* output a closing wrapper div */
-                ?>
-
-			</div>
-
-		<?php
-    } // end if have campos.
+    // Loop through the fields array
+    foreach($fields as $field){
+        $classes = (empty($field['classes'])) ? '' : ' '.$field['classes'];
+        $this->display_editable_field($field, $classes, $section['id'], get_current_user_id());
+    }
 
 }
 
-// Mostrar campo editable
-public function mostrar_campo_editable($campo, $classes, $seccion_id, $user_id){
-    ?>
+// Display editable field
+public function display_editable_field($field, $classes, $section_id, $user_id){
+?>
 
-	<div class="skpu-campo<?php echo esc_attr($classes); ?>" id="skpu-campo-<?php echo esc_attr($campo['id']); ?>">
+    <div class="wup-field<?php echo esc_attr($classes); ?>" id="wup-field-<?php echo esc_attr($field['id']); ?>">
 
     <?php
-
-    // the reserved meta ids
+    // Native user object attribute ids
     $fields_handled_with_update_user = apply_filters(
         'wup_fields_handled_with_update_user',
         [
@@ -280,75 +226,72 @@ public function mostrar_campo_editable($campo, $classes, $seccion_id, $user_id){
         ]
     );
 
-    // if the current campo id is in the reserved list
-    if(in_array($campo['id'], $fields_handled_with_update_user)){
+    // If the current field id is in the special list
+    if(in_array($field['id'], $fields_handled_with_update_user)){
         $userdata = get_userdata($user_id);
-        $current_campo_value = $userdata->{$campo['id']};
+        $current_field_value = $userdata->{$field['id']};
 
-    // not a reserved id - treat normally
+    // Not a reserved id, handle via user meta
     }else{
-        // get the current value
-        $current_campo_value = get_user_meta(get_current_user_id(), $campo['id'], true);
+        $current_field_value = get_user_meta(get_current_user_id(), $field['id'], true);
     }
 
     // Output the input label
     ?>
-		<label for="<?php echo esc_attr($seccion_id); ?>[<?php echo esc_attr($campo['id']); ?>]"><?php echo esc_html($campo['label']); ?></label>
+		<label for="<?php echo esc_attr($section_id); ?>[<?php echo esc_attr($field['id']); ?>]"><?php echo esc_html($field['label']); ?></label>
         <?php
-        switch($campo['type']){
+        switch($field['type']){
         case 'image':
         ?>
 
-        <input name="<?php echo esc_attr($seccion_id); ?>[<?php echo esc_attr($campo['id']); ?>]" type="file" accept="image/*">
+            <input name="<?php echo esc_attr($section_id); ?>[<?php echo esc_attr($field['id']); ?>]" type="file" accept="image/*">
 
-        <br><b>Valor actual:</b> <?php echo $current_campo_value; ?>
+            <img src="<?php echo $current_field_value; ?>">
 
         <?php
         break;
         case 'textarea':
         ?>
 
-            <textarea name="<?php echo esc_attr($seccion_id); ?>[<?php echo esc_attr($campo['id']); ?>]" id="<?php echo esc_attr($campo['id']); ?>"><?php echo esc_textarea($current_campo_value); ?></textarea>
+            <textarea name="<?php echo esc_attr($section_id); ?>[<?php echo esc_attr($field['id']); ?>]" id="<?php echo esc_attr($field['id']); ?>"><?php echo esc_textarea($current_field_value); ?></textarea>
 
         <?php
         break;
         case 'checkbox':
         ?>
 
-            <input type="hidden" name="<?php echo esc_attr($seccion_id); ?>[<?php echo esc_attr($campo['id']); ?>]" id="<?php echo esc_attr($campo['id']); ?>" value="0" <?php checked($current_campo_value, '0'); ?> />
-            <input type="checkbox" name="<?php echo esc_attr($seccion_id); ?>[<?php echo esc_attr($campo['id']); ?>]" id="<?php echo esc_attr($campo['id']); ?>" value="1" <?php checked($current_campo_value, '1'); ?> />
+            <input type="hidden" name="<?php echo esc_attr($section_id); ?>[<?php echo esc_attr($field['id']); ?>]" id="<?php echo esc_attr($field['id']); ?>" value="0" <?php checked($current_field_value, '0'); ?> />
+            <input type="checkbox" name="<?php echo esc_attr($section_id); ?>[<?php echo esc_attr($field['id']); ?>]" id="<?php echo esc_attr($field['id']); ?>" value="1" <?php checked($current_field_value, '1'); ?> />
 
         <?php
         break;
         case 'email':
         ?>
 
-            <input type="email" name="<?php echo esc_attr($seccion_id); ?>[<?php echo esc_attr($campo['id']); ?>]" id="<?php echo esc_attr($campo['id']); ?>" value="<?php echo esc_attr($current_campo_value); ?>" />
+            <input type="email" name="<?php echo esc_attr($section_id); ?>[<?php echo esc_attr($field['id']); ?>]" id="<?php echo esc_attr($field['id']); ?>" value="<?php echo esc_attr($current_field_value); ?>" />
 
         <?php
         break;
         case 'password':
         ?>
 
-            <input type="password" name="<?php echo esc_attr($seccion_id); ?>[<?php echo esc_attr($campo['id']); ?>]" id="<?php echo esc_attr($campo['id']); ?>" value="" placeholder="New Password" />
+            <input type="password" name="<?php echo esc_attr($section_id); ?>[<?php echo esc_attr($field['id']); ?>]" id="<?php echo esc_attr($field['id']); ?>" value="" placeholder="<?php _e('New password', 'wup'); ?>" />
 
-            <input type="password" name="<?php echo esc_attr($seccion_id); ?>[<?php echo esc_attr($campo['id']); ?>_check]" id="<?php echo esc_attr($campo['id']); ?>_check" value="" placeholder="Repeat New Password" />
+            <input type="password" name="<?php echo esc_attr($section_id); ?>[<?php echo esc_attr($field['id']); ?>_check]" id="<?php echo esc_attr($field['id']); ?>_check" value="" placeholder="<?php _e('Repeat', 'wup'); ?>" />
 
         <?php
         break;
         default:
         ?>
 
-            <input type="text" name="<?php echo esc_attr($seccion_id); ?>[<?php echo esc_attr($campo['id']); ?>]" id="<?php echo esc_attr($campo['id']); ?>" value="<?php echo esc_attr($current_campo_value); ?>" />
+            <input type="text" name="<?php echo esc_attr($section_id); ?>[<?php echo esc_attr($field['id']); ?>]" id="<?php echo esc_attr($field['id']); ?>" value="<?php echo esc_attr($current_field_value); ?>" />
 
         <?php
         }
 
     // Show description if set
-    if(isset($campo['desc'])){
-    ?>
-		<p class="description"><?php echo esc_html($campo['desc']); ?></p>
-	<?php
+    if(isset($field['desc'])){
+    echo '<p class="description">'. esc_html($field['desc']) .'</p>';
     }
     ?>
 	</div>
@@ -356,14 +299,14 @@ public function mostrar_campo_editable($campo, $classes, $seccion_id, $user_id){
 <?php
 }
 
-// Save editable fields (attached to the skpu_hook_antes_de_mostrar_secciones hook)
+// Save editable fields (attached to the wup_hook_before_displaying_sections hook)
 public function save_editable_fields($all_editable_sections, $user_id){
 
     // Create finfo object to safely check for file extension
     $FINFO = new finfo(FILEINFO_MIME_TYPE);
 
-    // Check the nonce
-    if(!isset($_POST['skpu_nonce_name']) || !wp_verify_nonce($_POST['skpu_nonce_name'], 'skpu_nonce_action')){
+    // Verify nonce
+    if(!isset($_POST['edit-profile-nonce']) || !wp_verify_nonce($_POST['edit-profile-nonce'], 'wup_edit_profile_action')){
         return;
     }
 
@@ -373,7 +316,7 @@ public function save_editable_fields($all_editable_sections, $user_id){
     // The $_POST data
     $posted_data = $_POST;
 
-    // Attach the $_FILES data to the posted datas keeping the field_id -> value structure
+    // Attach the $_FILES data to the posted data keeping the field_id -> value structure
     if(isset($_FILES)){
         foreach($_FILES as $file_row_key => $file_row_content){
             foreach($_FILES[$file_row_key]['name'] as $field_id => $field_file_name){
@@ -382,9 +325,7 @@ public function save_editable_fields($all_editable_sections, $user_id){
         }
     }
 
-    winni_log($posted_data);
-
-    // Lets check we have some data to save
+    // Check we have some data to save
     if(empty($posted_data)){
         return;
     }
@@ -431,8 +372,6 @@ public function save_editable_fields($all_editable_sections, $user_id){
                 continue;
             }
 
-            winni_log('Processing '.$field_id);
-
             // Check whether the key is reserved - handled with wp_update_user
             if(in_array($field_id, $fields_handled_with_update_user)){
                 
@@ -450,13 +389,13 @@ public function save_editable_fields($all_editable_sections, $user_id){
                     $messages['update_failed'] = '<p class="error">There was a problem with updating your perfil.</p>';
                 }
 
-            // Standard user meta - handle with update_user_meta
+            // Standard user meta, handle with update_user_meta
             }else{
 
-                // Lookup campo options by key
+                // Lookup field options by key
                 $registered_field_array_key = array_search($field_id, array_column($all_editable_fields, 'id'));
                 
-                // Sanitize user input based on campo type
+                // Sanitize user input based on field type
                 switch($all_editable_fields[$registered_field_array_key]['type']){
                     case 'textarea':
                         $field_value = wp_filter_nohtml_kses($field_value);
@@ -474,11 +413,11 @@ public function save_editable_fields($all_editable_sections, $user_id){
                                 // Save the final destination as image URL
                                 $field_value = $upload_dir['url'].'/'.$final_file_name;
                             }else{
-                                $messages['update_failed'] = '<p class="error">Ha fallado la subida de la imagen.</p>';
+                                $messages['update_failed'] = '<p class="error">'.__('Image upload has failed', 'wup').'</p>';
                             }
 
                         }else{
-                            $messages['update_failed'] = '<p class="error">El formato de imagen debe ser jpg, png o gif.</p>';
+                            $messages['update_failed'] = '<p class="error">'.__('Image extension must be PNG, GIF or JPG', 'wup').'</p>';
                         }
                     break;
                     case 'checkbox':
@@ -498,21 +437,19 @@ public function save_editable_fields($all_editable_sections, $user_id){
                     $meta = update_user_meta($user_id, $field_id, $field_value);
                 }
 
-                // Check the update was successful
-                if (false == $meta) {
-
-                    // Update failed
-                    $messages['update_failed'] = '<p class="error">There was a problem with updating your perfil.</p>';
+                // Check if update failed
+                if(false == $meta){
+                    $messages['update_failed'] = '<p class="error">'.__('There was a problem, please try again', 'wup').'</p>';
                 }
             }
-        } // End seccion loop
+        } // End section loop
     } // End data loop
 
 
     // Check if we have an messages to output
     if(empty($messages)){
     ?>
-		<div class="skpu-notice error">
+		<div class="wup-notice error">
 		<?php
         // Lets loop through the messages stored
         foreach($messages as $message){
@@ -527,11 +464,11 @@ public function save_editable_fields($all_editable_sections, $user_id){
             );
         }
         ?>
-		</div><!-- // messages -->
+		</div>
 	<?php
     }else{
     ?>
-		<div class="skpu-notice"><p class="updated"><?php esc_html_e('Your perfil was updated successfully!', 'skpu'); ?></p></div>
+		<div class="wup-notice"><p class="updated"><?php esc_html_e('Your profile was updated successfully!', 'wup'); ?></p></div>
 	<?php
     }
     ?>
@@ -539,13 +476,13 @@ public function save_editable_fields($all_editable_sections, $user_id){
 }
 
 // Save password
-function save_password($secciones, $user_id){
+function save_password($sections, $user_id){
 
     // Array to store messages
     $messages = [];
 
     // Check the nonce
-    if(!isset($_POST['skpu_nonce_name']) || !wp_verify_nonce($_POST['skpu_nonce_name'], 'skpu_nonce_action')){
+    if(!isset($_POST['edit-profile-nonce']) || !wp_verify_nonce($_POST['edit-profile-nonce'], 'wup_edit_profile_action')){
         return;
     }
 
@@ -558,7 +495,7 @@ function save_password($secciones, $user_id){
 
     // Check that the password match
     if($data['user_pass'] != $data['user_pass_check']){
-        $messages['password_mismatch'] = '<p class="error">'.sprintf(__('Please make sure the passwords match', 'skpu')).'.</p>';
+        $messages['password_mismatch'] = '<p class="error">'.__('Please make sure the passwords match', 'wup').'.</p>';
     }
 
     // Check we have any messages in the messages array - if we have password failed at some point
@@ -568,7 +505,7 @@ function save_password($secciones, $user_id){
         wp_set_password($data['user_pass'], $user_id);
         
         // Translators: %s: acceso link
-        $successfully_msg = '<div class="messages"><p class="updated">'.sprintf(__('You\'re password was successfully changed and you have been logged out. Please <a href="%s">acceso again here</a>.', 'skpu'), esc_url(wp_acceso_url())).'</p></div>';
+        $successfully_msg = '<div class="messages"><p class="updated">'.sprintf(__('Your password was successfully changed and you have been logged out. Please <a href="%s">login again here</a>', 'wup'), esc_url(wp_acceso_url())).'</p></div>';
         echo wp_kses(
             $successfully_msg,
             [
@@ -587,7 +524,7 @@ function save_password($secciones, $user_id){
     // Messages not empty therefore password failed
     }else{
     ?>
-		<div class="skpu-notice error">
+		<div class="wup-notice error">
 		<?php
         foreach ($messages as $message) {
             echo wp_kses(
@@ -608,12 +545,12 @@ function save_password($secciones, $user_id){
 }
 
 // Mostrar errores en el formulario
-public function mostrar_avisos(){
+public function maybe_display_notice(){
 
-    $avisos = wp_cache_get('skpu_avisos_perfil');
+    $avisos = wp_cache_get('wup_avisos_perfil');
 
     if($avisos){ 
-        echo '<div class="skpu-message">'.$avisos.'</div>';
+        echo '<div class="wup-message">'.$avisos.'</div>';
     }
 
 }

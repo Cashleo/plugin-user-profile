@@ -1,213 +1,208 @@
 <?php
 
-// Clase para gestionar el acceso de los usuarios
-
+// This class handles the login, user activation and password recovery features
 class WUP_Login{
 
 public function __construct(){}
 
 // Activate class: Setup shortcodes and add some actions and filters
-public static function activar_clase(){
+public static function setup_hooks(){
 
-    $esta_clase = new self();
+    $this_class = new self();
 
-    // Definir el shortcode para cargar el formulario de acceso
-    add_shortcode('wup_login', [$esta_clase, 'shortcode_login']);
+    // Setup the shortcode that displays the login form
+    add_shortcode('wup_login', [$this_class, 'shortcode_login']);
 
-    // Agregar acciones al hook de 'init'
-    add_action('init', [$esta_clase, 'procesar_acceso']);
-    add_action('init', [$esta_clase, 'procesar_cierre_sesion']);
-    add_action('init', [$esta_clase, 'procesar_recuperacion_clave']);
-    add_action('init', [$esta_clase, 'procesar_activacion_usuario']);
+    // Add actions to the init hook
+    add_action('init', [$this_class, 'process_login']);
+    add_action('init', [$this_class, 'process_logout']);
+    add_action('init', [$this_class, 'process_password_recovery']);
+    add_action('init', [$this_class, 'process_user_activation']);
 
-    // Añadir filtros
-    add_filter('login_url', [$esta_clase, 'filtrar_url_acceso'], 10, 2);
-    add_filter('logout_url', [$esta_clase, 'filtrar_url_cerrar_sesion'], 10, 2);
-    add_filter('lostpassword_url', [$esta_clase, 'filtrar_url_recuperar_clave'], 10, 2);
+    // Add filters
+    add_filter('login_url', [$this_class, 'filter_login_url'], 10, 2);
+    add_filter('logout_url', [$this_class, 'filter_logout_url'], 10, 2);
+    add_filter('lostpassword_url', [$this_class, 'filter_password_recovery_url'], 10, 2);
 
 }
 
 
-// Obtener URL de acción según qué acción vamos a hacer
-public function url_de_accion($accion = 'acceso', $redirect_after_login = ''){
+// Get specific action URL
+public function get_action_url($action = 'login', $redirect_after_login = ''){
 
-    // Usamos como base la URL de la página de acceso
-    $url_acceso = $this->url_de_acceso();
+    $login_url = $this->login_url();
 
-    switch($accion){
-        case 'clave-perdida':
-            return add_query_arg(['accion' => 'clave-perdida'], $url_acceso);
+    switch($action){
+        case 'lp': // Lost Password
+            return add_query_arg(['action' => 'lp'], $login_url);
         break;
-        case 'resetear-clave':
-            return add_query_arg(['accion' => 'resetear-clave'], $url_acceso);
+        case 'rp': // Reset Password
+            return add_query_arg(['action' => 'rp'], $login_url);
         break;
-        case 'salir':
-            return wp_nonce_url(add_query_arg(['accion' => 'salir'], $url_acceso), 'log-out');
+        case 'lo': // Log-Out
+            return wp_nonce_url(add_query_arg(['action' => 'lo'], $login_url), 'log-out');
         break;
         default:
-            return $url_acceso;
+            return $login_url;
     }
 }
 
-// Obtener la URL de la página de acceso
-public function url_de_acceso(){
+// Get login URL
+public function login_url(){
 
-    $id_pagina_acceso = get_option('wup_page_id_for_login');
+    $login_page_id = get_option('wup_page_id_for_login');
 
-    if(!$id_pagina_acceso){
+    if(!$login_page_id){
         return false;
     }
 
-    return get_permalink($id_pagina_acceso);
+    return get_permalink($login_page_id);
 
 }
 
-// Filtrar la URL de acceso de WP para poner la nuestra
-public function filtrar_url_acceso($url, $redirect){
-    return $this->url_de_accion('acceso', $redirect);
+// Replace WP native login url with new custom URL
+public function filter_login_url($url, $redirect){
+    return $this->login_url();
 }
 
-// Filtrar la URL de cerrar sesión de WP para poner la nuestra
-public function filtrar_url_cerrar_sesion($url, $redirect){
-    return $this->url_de_accion('salir', $redirect);
+// Replace WP native logout url with new custom URL
+public function filter_logout_url($url, $redirect){
+    return $this->get_action_url('lo', $redirect);
 }
 
-// Filtrar la URL de recuperar clave de WP para poner la nuestra
-public function filtrar_url_recuperar_clave($url, $redirect){
-    return $this->url_de_accion('clave-perdida', $redirect);
+// Replace WP native password recovery url with new custom URL
+public function filter_password_recovery_url($url, $redirect){
+    return $this->get_action_url('lp', $redirect);
 }
 
-// Generar la URL de clave perdida
-public function generar_url_clave_perdida(){
-    return sprintf('<a href="%s">%s</a>', $this->url_de_accion('clave-perdida'), __('He perdido mi clave', 'skpu'));
+// Generate password recovery URL
+public function generate_password_recovery_url(){
+    return sprintf('<a href="%s">%s</a>', $this->get_action_url('lp'), __('I lost my password', 'wup'));
 }
 
-// Función asociada al shortcode [wup_login]
+// [wup_login] shortcode callback
 public function shortcode_login(){
 
     ob_start();
 
-    $url_pagina_acceso = $this->url_de_acceso();
-
-    $accion = isset($_GET['accion']) ? $_GET['accion'] : 'acceso';
+    $action = isset($_GET['action']) ? $_GET['action'] : 'login';
     $args = [
-        'accion_url' => $url_pagina_acceso,
+        'action_url' => $this->login_url(),
     ];
 
-    // Mostrar contenido según la acción que vayamos a realizar
-    switch($accion){
+    // Display content according to action parameter
+    switch($action){
 
-    // Clave perdida. Pedimos usuario para poder enviarle un correo de recuperación
-    case 'clave-perdida':
-        wp_cache_set( 'skpu_avisos_acceso', __('No te preocupes, escribe aquí tu usuario o email y recibirás un enlace para poder recuperar tu clave.', 'skpu') );
-        wup_load_view('formulario-clave-perdida.php', $args);
+    // Lost Password. Ask user so we may send recovery mail
+    case 'lp':
+        wp_cache_set('wup_login_notice', __('Write your username or email and you well receive a password recovery link.', 'wup'));
+        wup_load_view('form-lost-password.php', $args);
     break;
 
-    // Resetear clave. El usuario ya ha pinchado el enlace de recuperación
-    case 'resetear-clave':
-        if(isset($_GET['clave-cambiada'])){
-            wp_cache_set('skpu_avisos_acceso', __('Tu clave ha sido cambiada correctamente.', 'skpu'));
-            wup_load_view('formulario-acceso.php', $args);
+    // Reset password. User already clicked the recovery link
+    case 'rp':
+        if(isset($_GET['pr-ok'])){
+            wp_cache_set('wup_login_notice', __('Your password has been updated.', 'wup'));
+            wup_load_view('form-login.php', $args);
         }else{
-            wp_cache_set('skpu_avisos_acceso', __('Escribe tu nueva clave de acceso', 'skpu'));
-            wup_load_view('formulario-resetear-clave.php', $args);
+            wp_cache_set('wup_login_notice', __('Write your new password', 'wup'));
+            wup_load_view('form-reset-password.php', $args);
         }
     break;
 
-    // Por defecto mostramos el formulario de acceso
+    // By default, display the login form
     default:
-        if(isset($_GET['enviado-correo-recuperacion'])){
-            wp_cache_set('skpu_avisos_acceso', __('Check your e-mail for the confirmation link.', 'skpu'));
+        if(isset($_GET['rms'])){ // RMS stands for Recovery Mail Sent
+            wp_cache_set('wup_login_notice', __('A password recovery link has been sent to your E-Mail', 'wup'));
         }
 
-        if(isset($_GET['loggedout'])){
-            wp_cache_set('skpu_avisos_acceso', __('You are now logged out.', 'skpu'));
+        if(isset($_GET['lo-ok'])){ // Logged-Out OK
+            wp_cache_set('wup_login_notice', __('You are now logged out', 'wup'));
         }
 
-        wup_load_view('formulario-acceso.php', $args);
+        wup_load_view('form-login.php', $args);
     }
 
     return ob_get_clean();
 }
 
-// Procesar el formulario de acceso
-public function procesar_acceso(){
+// Process login form
+public function process_login(){
 
-    // Solo procesar si existe nonce (si no existe es que no hay nada que procesar)
-    if(!isset($_POST['nonce_para_acceso'])){
+    // Return if the nonce is not set
+    if(!isset($_POST['login-nonce'])){
         return;
     }
 
-    // Existe nonce, vamos a verificarlo
-    if(!wp_verify_nonce($_POST['nonce_para_acceso'], 'skpu_accion_acceder')){
-        wp_cache_set('skpu_avisos_acceso', '<strong>'.__('Error', 'skpu').':</strong> '.__('Ha habido un problema, vuelve a intentarlo por favor.', 'skpu') );
+    // Nonce exists, let's verify it
+    if(!wp_verify_nonce($_POST['login-nonce'], 'wup_login_action')){
+        wp_cache_set('wup_login_notice', '<strong>'.__('Error', 'wup').':</strong> '.__('Please try again', 'wup') );
         return;
     }
 
-    // Credenciales que usaremos con la función wp_signon()
-    $credenciales = []; // Meteremos aquí los datos en los siguientes pasos
+    // Args to be passed to wp_signon()
+    $signon_args = [];
 
-    // Verificar que se ha dado un nombre de usuario o email y existe
+    // Make sure an email or username has been given
     if(empty($_POST['mail-or-user'])){
-        wp_cache_set( 'skpu_avisos_acceso',  __('Debes escribir tu correo o tu nombre de usuario.', 'skpu') );
+        wp_cache_set('wup_login_notice', __('Please provide your username or email', 'wup'));
         return;
     }else{
 
-        // Obtener usuario a partir del nickname o el correo
-        $mail_o_usuario_sin_slashes = wp_unslash($_POST['mail-or-user']);
+        // Get user by mail or username
+        $unslashed_mail_or_user = wp_unslash($_POST['mail-or-user']);
 
-        $usuario = false; // Partimos del valor false por defecto
-        if(is_email($mail_o_usuario_sin_slashes)){
-            $usuario = get_user_by('email', sanitize_email($mail_o_usuario_sin_slashes));
+        $user = false; // Presuppose $user as false
+        if(is_email($unslashed_mail_or_user)){
+            $user = get_user_by('email', sanitize_email($unslashed_mail_or_user));
         }else{
-            $usuario = get_user_by('login', sanitize_user($mail_o_usuario_sin_slashes));
+            $user = get_user_by('login', sanitize_user($unslashed_mail_or_user));
         }
 
-        // Comprobar si ha ido bien
-        if($usuario){
-            $credenciales['user_login'] = $usuario->user_login;
+        // Check if we found a user
+        if($user){
+            $signon_args['user_login'] = $user->user_login;
         }else{
-            wp_cache_set('skpu_avisos_acceso',  __('Datos de acceso incorrectos', 'skpu'));
+            wp_cache_set('wup_login_notice', __('Wrong credentials', 'wup'));
             return;
         }
 
     }
 
-    // Verificar que se ha definido la clave
+    // Make sure a password was given
     if(empty($_POST['password'])){
-        wp_cache_set( 'skpu_avisos_acceso', __('Por favor escribe tu clave', 'skpu') );
+        wp_cache_set('wup_login_notice', __('Please provide your password', 'wup') );
         return;
     }else{
-        $credenciales['user_password'] = $_POST['password'];
+        $signon_args['user_password'] = $_POST['password'];
     }
 
-    // Comprobar el estado de activación del usuario
-    $estado_activacion_usuario = get_user_meta($usuario->ID, 'wup_user_activation_status', true);
+    // Check user activation status
+    $user_activation_status = get_user_meta($user->ID, 'wup_user_activation_status', true);
 
-    if($estado_activacion_usuario == 'activacion_pendiente'){
-        wp_cache_set( 'skpu_avisos_acceso', '<strong>'.__('Error', 'skpu').':</strong> '.__('Por favor, verifica tu cuenta', 'skpu') );
+    if($user_activation_status == 'pending_activation'){
+        wp_cache_set('wup_login_notice', '<strong>'.__('Error', 'wup').':</strong> '.__('Please, verify your account', 'wup'));
         return;
     }
 
-    // Recordar el inicio de sesión
-    $credenciales['remember'] = isset($_POST['remember']);
+    // Remember login?
+    $signon_args['remember'] = isset($_POST['remember']);
 
-    // Intentar iniciar sesión con los datos proporcionados
-    $usuario = wp_signon($credenciales, is_ssl());
+    // Try to execute signon
+    $user = wp_signon($signon_args, is_ssl());
 
-    if(is_wp_error($usuario)){
-        wp_cache_set('skpu_avisos_acceso', __('Datos de acceso incorrectos', 'skpu'));
+    if(is_wp_error($user)){
+        wp_cache_set('wup_login_notice', __('Wrong credentials', 'wup'));
         return;
     }else{
 
-        wp_set_current_user($usuario->ID);
-        wp_set_auth_cookie($usuario->ID);
+        wp_set_current_user($user->ID);
 
-        // Hacia donde redirigimos al usuario cuando se ha logueado
-        if(isset($_POST['redirect_after_login'])){ // Esseccionlecido de manera opcional en el formulario de acceso
+        // Should we redirect after login?
+        if(isset($_POST['redirect_after_login'])){
             $redirect_after_login = esc_url(wp_unslash($_POST['redirect_after_login']));
         }else{
-            // Si no hay nada esseccionlecido, vamos a la página de mi perfil
+            // If not provided, redirect to profile page by default
             $redirect_after_login = get_permalink(get_option('wup_page_id_for_show_my_profile'));
         }
 
@@ -218,68 +213,70 @@ public function procesar_acceso(){
 }
 
 
-// Procesar la acción de cerrar sesión
-public function procesar_cierre_sesion(){
-    if(isset($_GET['accion']) && 'salir' == $_GET['accion']){
+// Process logout
+public function process_logout(){
+    if(isset($_GET['action']) && 'lo' == $_GET['action']){
         wp_logout();
         wp_redirect(site_url());
         exit;
     }
 }
 
-// Procesar la recuperación de contraseña
-public function procesar_recuperacion_clave(){
 
-    if(!isset($_POST['skpu_paso_recuperacion_clave'])){
+// Process password recovery
+public function process_password_recovery(){
+
+    if(!isset($_POST['wup-password-recovery-step'])){
         return;
     }
 
-    // Verificar nonce
-    if(!isset($_POST['skpu_nonce_recuperar_clave']) 
-    || !wp_verify_nonce($_POST['skpu_nonce_recuperar_clave'], 'skpu_accion_recuperar_clave')){
-        wp_cache_set('skpu_avisos_acceso', '<strong>'.__('Error', 'skpu').':</strong> '.__('Ha habido un problema, vuelve a intentarlo por favor.', 'skpu') );
+    // Verify nonce
+    if(!isset($_POST['nonce-password-recovery']) 
+    || !wp_verify_nonce($_POST['nonce-password-recovery'], 'wup_password_recovery_action')){
+        wp_cache_set('wup_login_notice', '<strong>'.__('Error', 'wup').':</strong> '.__('Please try again', 'wup'));
         return;
     }
 
-    // En el primer paso procesamos el envío de un email de recuperación
-    if('enviar-correo-recuperacion' == $_POST['skpu_paso_recuperacion_clave']){
+    // First step: send recovery email
+    if('send-recovery-link' == $_POST['wup-password-recovery-step']){
 
-        if($this->enviar_correo_recuperar_clave()){
-            wp_redirect(add_query_arg(['enviado-correo-recuperacion' => '1'], $this->url_de_acceso()));
+        if($this->send_password_recovery_email()){
+            // RMS stands for Recovery Mail Sent
+            wp_redirect(add_query_arg(['rms' => '1'], $this->login_url()));
             exit;
         }
 
-    // En el segundo paso, gestionamos el cambio de contraseña
-    }elseif('realizar-cambio-clave' == $_POST['skpu_paso_recuperacion_clave']){
+    // Second step: handle password reset
+    }elseif('execute-password-reset' == $_POST['wup-password-recovery-step']){
 
-        // Si existen los datos requeridos
+        // If required data is set
         if(isset($_POST['password1']) 
         && isset($_POST['password2']) 
         && isset($_POST['key']) 
-        && isset($_POST['acceso'])){
+        && isset($_POST['login'])){
 
         // Comprobar el key de recuperación
-        $usuario = check_password_reset_key($_POST['key'], sanitize_user($_POST['acceso']));
+        $user = check_password_reset_key($_POST['key'], sanitize_user($_POST['login']));
 
-            if(is_object($usuario)){
+            if(is_object($user)){
 
                 // Guardar estos valores para el formulario (por si hay que repetir las claves)
                 $args['key'] = $_POST['key'];
-                $args['acceso'] = sanitize_user($_POST['acceso']);
+                $args['login'] = sanitize_user($_POST['login']);
 
                 if(empty($_POST['password1']) || empty($_POST['password2'])){
-                    wp_cache_set('skpu_avisos_acceso', __('Debes escribir la clave en los dos campos.', 'skpu'));
+                    wp_cache_set('wup_login_notice', __('You have to repeat your password', 'wup'));
                     return;
                 }
 
                 if($_POST['password1'] !== $_POST['password2']){
-                    wp_cache_set('skpu_avisos_acceso', __('Las claves escritas no coinciden.', 'skpu'));
+                    wp_cache_set('wup_login_notice', __('The provided passwords do not match', 'wup'));
                     return;
                 }
 
                 // Realizamos el cambio de clave
-                $this->cambiar_clave_usuario_y_enviar_correo($usuario, $_POST['password1']);
-                wp_redirect(add_query_arg('clave-cambiada', '1', remove_query_arg(['key', 'acceso'])));
+                $this->update_password_and_send_confirmation_email($user, $_POST['password1']);
+                wp_redirect(add_query_arg('pr-ok', '1', remove_query_arg(['key', 'login'])));
                 exit;
                 
             }
@@ -290,108 +287,104 @@ public function procesar_recuperacion_clave(){
 }
 
 // Enviar el correo de recuperación de clave
-public function enviar_correo_recuperar_clave(){
+public function send_password_recovery_email(){
 
-    if(is_email($_POST['acceso'])){
-        $usuario = get_user_by('email', sanitize_email(wp_unslash($_POST['acceso'])));
+    if(is_email($_POST['login'])){
+        $user = get_user_by('email', sanitize_email(wp_unslash($_POST['login'])));
     }else{
-        $usuario = get_user_by('acceso', sanitize_user(wp_unslash($_POST['acceso'])));
+        $user = get_user_by('login', sanitize_user(wp_unslash($_POST['login'])));
     }
 
-    if(!$usuario){
-        wp_cache_set('skpu_avisos_acceso', __('El usuario o email es incorrecto.', 'skpu'));
+    if(!$user){
+        wp_cache_set('wup_login_notice', __('No user was found with the provided email or username', 'wup'));
         return false;
     }
 
-    $key = get_password_reset_key($usuario);
+    $key = get_password_reset_key($user);
 
-    $url_de_recuperacion = add_query_arg(
+    $password_recovery_url = add_query_arg(
         [
-            'accion' => 'resetear-clave',
+            'action' => 'rp',
             'key'    => $key,
-            'acceso'  => urlencode($usuario->user_login),
+            'login'  => urlencode($user->user_login),
         ],
-        $this->url_de_acceso()
+        $this->login_url()
     );
 
-    $mensaje_recuperacion = __('Se ha solicitado un enlace para recuperar la clave de usuario:', 'skpu')."\r\n\r\n";
-    $mensaje_recuperacion .= network_home_url('/')."\r\n\r\n";
-    $mensaje_recuperacion .= sprintf(esc_html__('Usuario: %s', 'skpu'), $usuario->user_login)."\r\n\r\n";
-    $mensaje_recuperacion .= esc_html_e('Para realizar el cambio de clave, abre este enlace:', 'skpu')."\r\n\r\n";
-    $mensaje_recuperacion .= ' '.$url_de_recuperacion." \r\n";
+    $password_recovery_message = __('A password recovery email has been requested', 'wup')."\r\n\r\n";
+    $password_recovery_message .= network_home_url('/')."\r\n\r\n";
+    $password_recovery_message .= sprintf(esc_html__('User: %s', 'wup'), $user->user_login)."\r\n\r\n";
+    $password_recovery_message .= esc_html_e('To reset your password, click the following link:', 'wup')."\r\n\r\n";
+    $password_recovery_message .= ' '.$password_recovery_url." \r\n";
 
-    $nombre_del_sitio = wp_specialchars_decode(get_option('blogname'), ENT_QUOTES);
+    $current_site_name = wp_specialchars_decode(get_option('blogname'), ENT_QUOTES);
 
-    if(is_multisite()){
-        $nombre_del_sitio = $GLOBALS['current_site']->site_name;
-    }
-
-    $asunto = sprintf(esc_html__('[%s] Recuperar clave', 'skpu'), $nombre_del_sitio);
+    $password_recovery_subject = sprintf(esc_html__('[%s] Password recovery', 'wup'), $current_site_name);
    
-    wp_mail($usuario->user_email, wp_specialchars_decode($asunto), $mensaje_recuperacion);
+    wp_mail($user->user_email, wp_specialchars_decode($password_recovery_subject), $password_recovery_message);
 
     return true;
 }
 
-// Procesar la activación del usuario
-public function procesar_activacion_usuario(){
+// Process user activation
+public function process_user_activation(){
 
-    // Si no existe el id de usuario o el código en la URL, no hay que procesar la activación
+    // Return if the user or activation code are not set
     if((!isset($_GET['u'])) or (!isset($_GET['c']))){
         return;
     }
 
-    $id_usuario = intval($_GET['u']);
+    $user_id = intval($_GET['u']);
 
-    // Sacar el código de activación que tenemos guardado en la base de datos
-    $codigo_activacion_correcto = get_user_meta($id_usuario, 'wup_user_activation_code', true);
+    // Grab the user activation code from the database
+    $the_correct_user_activation_code = get_user_meta($user_id, 'wup_user_activation_code', true);
 
-    if(!$codigo_activacion_correcto){
-        wp_cache_set('skpu_avisos_acceso', __('El enlace de activación ha caducado', 'skpu'));
+    if(!$the_correct_user_activation_code){
+        wp_cache_set('wup_login_notice', __('This password recovery link is not longer valid', 'wup'));
         return;
     }
 
-    $codigo_en_el_enlace = wp_unslash($_GET['c']);
+    $the_provided_user_activation_code = wp_unslash($_GET['c']);
 
-    // Comprobar si el código correcto coincide con el del enlace
-    if($codigo_activacion_correcto != $codigo_en_el_enlace){
-        wp_cache_set('skpu_avisos_acceso', 'Código de activación incorrecto');
+    // Check if the provided activation code is right
+    if($the_correct_user_activation_code != $the_provided_user_activation_code){
+        wp_cache_set('wup_login_notice', __('This password recovery link is not longer valid', 'wup'));
         return;
     }
 
-    // Esseccionlecer como usuario activo
-    update_user_meta($id_usuario, 'wup_user_activation_status', 'usuario_activado');
+    // Set user as active
+    update_user_meta($user_id, 'wup_user_activation_status', 'is_active');
 
-    // Borrar el metadato del código de activación
-    delete_user_meta($id_usuario, 'wup_user_activation_code');
+    // Delete activation code
+    delete_user_meta($user_id, 'wup_user_activation_code');
 
-    // Redirigir a la página de acceso con el aviso de activar cuenta
-    wp_redirect(add_query_arg(['a' => '1'], $this->url_de_acceso()));
+    // Redirect to the login URL where the activated message will be shown
+    wp_redirect(add_query_arg(['a' => '1'], $this->login_url()));
     exit;
 
 }
 
 
-// Función para cambiar la clave y enviar notificación
-public function cambiar_clave_usuario_y_enviar_correo($usuario, $nueva_clave){
+// Update password and send confirmation
+public function update_password_and_send_confirmation_email($user, $new_password){
 
-    wp_set_password($nueva_clave, $usuario->ID);
+    wp_set_password($new_password, $user->ID);
 
-    // Enviar confirmación del cambio por correo
-    $nombre_del_sitio = wp_specialchars_decode(get_option('blogname'), ENT_QUOTES);
-    $mensaje_recuperacion = 'Tu clave se ha cambiado.';
-    $asunto = '['.$nombre_del_sitio.'] Clave cambiada';
-    wp_mail($usuario->user_email, $asunto, $mensaje_recuperacion);
+    // Send confirmation email
+    $current_site_name = wp_specialchars_decode(get_option('blogname'), ENT_QUOTES);
+    $password_recovery_message = __('Your password has been updated', 'wup');
+    $password_recovery_subject = __('Password updated', 'wup');
+    wp_mail($user->user_email, $password_recovery_subject, $password_recovery_message);
 
 }
 
-// Mostrar errores en el formulario
-public function mostrar_avisos(){
+// Display login notice
+public function maybe_display_notice(){
 
-    $avisos = wp_cache_get('skpu_avisos_acceso');
+    $notice = wp_cache_get('wup_login_notice');
 
-    if($avisos){ 
-        echo '<div class="skpu-message">'.$avisos.'</div>';
+    if($notice){ 
+        echo '<div class="wup-message">'.$notice.'</div>';
     }
 
 }

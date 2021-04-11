@@ -1,30 +1,30 @@
 <?php
 
-// Clase para gestionar el proceso de registro de los usuarios
+// This class handles the user registration features
 class WUP_Registration{
 
 public function __construct(){}
 
 // Activate class: Setup shortcodes and add some actions and filters
-public static function activar_clase(){
+public static function setup_hooks(){
 
-    $esta_clase = new self();
+    $this_class = new self();
 
-    // Definir el shortcode para cargar el formulario de registro
-    add_shortcode('wup_registration', [$esta_clase, 'shortcode_registration']);
+    // Setup the shortcode that displays the registration form
+    add_shortcode('wup_registration', [$this_class, 'shortcode_registration']);
 
-    // Agregar acciones al hook de 'init'
-    add_action('init', [$esta_clase, 'procesar_registro']);
+    // Add actions to the init hook
+    add_action('init', [$this_class, 'process_registration']);
 
 }
 
-// Función asociada al shortcode [wup_registration]
+// [wup_registration] shortcode callback
 public function shortcode_registration($atts){
 
     $atts = shortcode_atts(
         [
-            'rol_especifico' => '',    // Forzar un rol fijo
-            'rol_elegir' => ''  // Permitir al usuario seleccionar su rol
+            'specific_role' => '',    // Force a specific role
+            'role_selector' => ''     // Allow the user to select a role
         ],
         $atts
     );
@@ -34,7 +34,7 @@ public function shortcode_registration($atts){
     if(is_user_logged_in()){
 
         wup_load_view(
-            'aviso-usuario-identificado.php',
+            'registration-already-logged-in.php',
             [
                 'user' => wp_get_current_user(),
             ]
@@ -43,216 +43,212 @@ public function shortcode_registration($atts){
     }else{
 
         $args = [
-            'rol_especifico'    => $atts['rol_especifico'],
-            'rol_elegir' => $atts['rol_elegir']
+            'specific_role'    => $atts['specific_role'],
+            'role_selector' => $atts['role_selector']
         ];
-        wup_load_view('formulario-registro.php', $args);
+        wup_load_view('form-registration.php', $args);
 
     }
 
     return ob_get_clean();
 }
 
-// Obtener la URL de la página de registro
-public function url_de_registro(){
+// Get registration URL
+public function registration_url(){
 
-    $id_pagina_registro = get_option('wup_page_id_for_registration');
+    $registration_page_id = get_option('wup_page_id_for_registration');
 
-    if(!$id_pagina_registro){
-        $id_pagina_registro = site_url();
+    if(!$registration_page_id){
+        $registration_page_id = site_url();
     }
 
-    return get_permalink($id_pagina_registro);
+    return get_permalink($registration_page_id);
 
 }
 
-// Obtener la URL de la página de registro finalizado
-public function url_de_registro_finalizado(){
+// Get registration sinished URL
+public function registration_finished_url(){
 
-    $id_pagina_registro_finalizado = get_option('wup_page_id_for_registration_finished');
+    $registration_finished_page_id = get_option('wup_page_id_for_registration_finished');
 
-    if(!$id_pagina_registro_finalizado){
-        $id_pagina_registro_finalizado = site_url();
+    if(!$registration_finished_page_id){
+        $registration_finished_page_id = site_url();
     }
 
-    return get_permalink($id_pagina_registro_finalizado);
+    return get_permalink($registration_finished_page_id);
 
 }
 
-// Procesar los datos enviados en el formulario de registro
-public function procesar_registro(){
+// Process registration
+public function process_registration(){
 
-    // Solo procesar si existe nonce (si no existe es que no hay nada que procesar)
-    if(!isset($_POST['nonce_para_registro'])){
+    // Return if the nonce is not set
+    if(!isset($_POST['registration-nonce'])){
         return;
     }
 
     // Existe nonce, vamos a verificarlo
-    if(!wp_verify_nonce($_POST['nonce_para_registro'], 'skpu_accion_registrarse')){
-        wp_cache_set('skpu_avisos_registro', '<strong>'.__('Error', 'skpu').':</strong> '.__('Ha habido un problema, vuelve a intentarlo por favor.', 'skpu'));
+    if(!wp_verify_nonce($_POST['registration-nonce'], 'wup_registration_action')){
+        wp_cache_set('wup_registration_notice', '<strong>'.__('Error', 'wup').':</strong> '.__('Please try again', 'wup'));
         return;
     }
 
-    // Array para ir guardando los datos del nuevo usuario para insertarlo en WP
-    $datos_nuevo_usuario = [];
+    // Array to store the new user data
+    $data_for_new_user = [];
 
-    // Verificar email
+    // Validate email
     if(!filter_var($_POST['user_email'], FILTER_VALIDATE_EMAIL)){
-        wp_cache_set('skpu_avisos_registro', '<strong>'.__('Error', 'skpu').':</strong> '.__('Debe especificar un email válido.', 'skpu'));
+        wp_cache_set('wup_registration_notice', '<strong>'.__('Error', 'wup').':</strong> '.__('Please provide a valid email', 'wup'));
         return;
     }else{
 
-        // Comprobar si el email ya existe
-        $email_limpio = sanitize_email(wp_unslash($_POST['user_email']));
-        if(email_exists($email_limpio)){
-            wp_cache_set('skpu_avisos_registro', '<strong>'.__('Error', 'skpu').':</strong> '.__('Ya existe una cuenta con este correo electrónico.', 'skpu'));
+        // Check if this email already exists
+        $clean_email = sanitize_email(wp_unslash($_POST['user_email']));
+        if(email_exists($clean_email)){
+            wp_cache_set('wup_registration_notice', '<strong>'.__('Error', 'wup').':</strong> '.__('An account already exists with this email address', 'wup'));
             return;
         }else{
-            $datos_nuevo_usuario['user_email'] = $email_limpio;
+            $data_for_new_user['user_email'] = $clean_email;
         }
 
     }
 
-    // Verificar el login (nombre alfanumerico sin espacios)
-    if(empty($_POST['usuario_login'])){ // Empty detecta si está vacío o no existe
-        // Usar el email como login si no se ha especificado ninguno
-        $datos_nuevo_usuario['user_login'] = $email_limpio;
+    // Validate username (if not provided, use the email as username)
+    if(empty($_POST['user_username'])){
+        $data_for_new_user['user_login'] = $clean_email;
     }else{
 
-        // Comprobar si el usuario ya existe
-        $usuario_login_limpio = sanitize_user(wp_unslash($_POST['usuario_login']));
-        if(username_exists($usuario_login)){
-            wp_cache_set('skpu_avisos_registro', '<strong>'.__('Error', 'skpu').':</strong> '.__('Ya existe una cuenta con este nombre de usuario.', 'skpu'));
+        // Check if this username already exists
+        $clean_username = sanitize_user(wp_unslash($_POST['user_username']));
+        if(username_exists($clean_username)){
+            wp_cache_set('wup_registration_notice', '<strong>'.__('Error', 'wup').':</strong> '.__('An account already exists with this username', 'wup'));
             return;
         }else{
-            $datos_nuevo_usuario['user_login'] = $usuario_login;
+            $data_for_new_user['user_login'] = $clean_username;
         }
 
     }
 
-    // Comprobar si se ha seleccionado un apodo
-    if(!empty($_POST['usuario_apodo'])){ // Empty detecta si está vacío o no existe
-        // Comprobar si el usuario ya existe
-        $usuario_apodo = sanitize_text_field(wp_unslash($_POST['usuario_apodo']));
-        $datos_nuevo_usuario['display_name'] = $usuario_apodo;
+    // Check if a nickname has been provided
+    if(!empty($_POST['user_nickname'])){
+        $user_nickname = sanitize_text_field(wp_unslash($_POST['user_nickname']));
+        $data_for_new_user['display_name'] = $user_nickname;
     }
 
-    // Verificar que la clave 1 no está vacía
+    // Make sure password 1 is set
     if(empty($_POST['password1'])){
-        wp_cache_set('skpu_avisos_registro', '<strong>'.__('Error', 'skpu').':</strong> '.__('Debe escribir una contraseña.', 'skpu'));
+        wp_cache_set('wup_registration_notice', '<strong>'.__('Error', 'wup').':</strong> '.__('Please provide a password', 'wup'));
         return;
     }
 
-    // Verificar que la clave 2 no está vacía
+    // Make sure password 2 is set
     if(empty($_POST['password2'])){
-        wp_cache_set('skpu_avisos_registro', '<strong>'.__('Error', 'skpu').':</strong> '.__('Debe repetir la contraseña para confirmarla.', 'skpu'));
+        wp_cache_set('wup_registration_notice', '<strong>'.__('Error', 'wup').':</strong> '.__('Please provide a password', 'wup'));
         return;
     }
 
     // Verify that the 2 passwords match
     if($_POST['password1'] != $_POST['password2']){
-        wp_cache_set('skpu_avisos_registro', '<strong>'.__('Error', 'skpu').':</strong> '.__('las contraseñas no coinciden.', 'skpu'));
+        wp_cache_set('wup_registration_notice', '<strong>'.__('Error', 'wup').':</strong> '.__('The provided passwords do not match', 'wup'));
         return;
     }else{
-        $datos_nuevo_usuario['user_pass'] = $_POST['password1']; // No lo limpiamos, se aplicará un hash
+        $data_for_new_user['user_pass'] = $_POST['password1']; // Don't sanitize this, it will be hashed
     }
 
-    // Asignar rol (dejamos el filtro ahí por si alguien quiere modificar el rol)
-    $datos_nuevo_usuario['role'] = apply_filters('wup_default_registration_role', 'subscriber');
+    // Assign role (allow filter)
+    $data_for_new_user['role'] = apply_filters('wup_default_registration_role', 'subscriber');
     
-    // Nombre de pila
+    // User first name
     if(isset($_POST['user_first_name'])){
-        $datos_nuevo_usuario['first_name'] = sanitize_text_field(wp_unslash($_POST['user_first_name']));
+        $data_for_new_user['first_name'] = sanitize_text_field(wp_unslash($_POST['user_first_name']));
     }
 
-    // Apellidos
+    // User last name
     if(isset($_POST['user_last_name'])){
-        $datos_nuevo_usuario['last_name'] = sanitize_text_field(wp_unslash($_POST['user_last_name']));
+        $data_for_new_user['last_name'] = sanitize_text_field(wp_unslash($_POST['user_last_name']));
     }
 
-    // Insertar usuario en WordPress
-    $id_del_usuario_creado = wp_insert_user($datos_nuevo_usuario);
+    // Create the user
+    $the_created_user_id = wp_insert_user($data_for_new_user);
     
-    if(is_wp_error($id_del_usuario_creado)){
-        wp_cache_set('skpu_avisos_registro', $id_del_usuario_creado->get_error_message());
+    if(is_wp_error($the_created_user_id)){
+        wp_cache_set('wup_registration_notice', $the_created_user_id->get_error_message());
         return;
     }else{
 
-        // Hacer accion cuando el usuario se registre
-        do_action('wup_action_after_user_registration', $id_del_usuario_creado);
+        // Allow action after user registration
+        do_action('wup_action_after_user_registration', $the_created_user_id);
 
-        // Automáticamente meter los metadatos extra si hay
+        // Save custom user metadata if provided
         foreach($_POST as $input_name => $input_value){
-            // Compruebo si el nombre del campo empieza por "meta-loquesea"
+            // Check for POST input keys called "meta-whatever"
             if(substr($input_name,0,5)=='meta-'){
                 $metadata_name = substr($input_name,5);
                 $metadata_value = sanitize_text_field($input_value);
-                add_user_meta($id_del_usuario_creado, $metadata_name, $metadata_value);
+                add_user_meta($the_created_user_id, $metadata_name, $metadata_value);
             }
         }
 
-        // Establecer estado como pendiente de activación
-        //add_user_meta($id_del_usuario_creado, 'wup_user_activation_status', 'activacion_pendiente');
-        add_user_meta($id_del_usuario_creado, 'wup_user_activation_status', 'usuario_activado');
- 
-        // Enviamos el email de activación
-        //$this->enviar_email_activacion($id_del_usuario_creado);
+        // See if the current setting is to disable the email activation mode
+        $is_email_activation_mode_disabled = get_option('wup_disable_activation_email', false);
+        
+        // If activation mode is disabled, just mark the user as active
+        if($is_email_activation_mode_disabled){
+            add_user_meta($the_created_user_id, 'wup_user_activation_status', 'is_active');
+        }else{
+            // Set as pending activation
+            add_user_meta($the_created_user_id, 'wup_user_activation_status', 'pending_activation');
 
-        // Guardar el sexo si se ha establecido
-        if(!empty($_POST['user_gender'])){ // Empty detecta si está vacío o no existe
-            // Comprobar si el usuario ya existe
-            $user_gender = sanitize_text_field(wp_unslash($_POST['user_gender']));
-            add_user_meta($id_del_usuario_creado, 'gender', $user_gender, true);
+            // Send user activation email
+            $this->send_activation_email($the_created_user_id);
         }
 
-        // Redirigir a una página específica si se ha indicado en el form de registro
+        // Redirect to a specific page after registration
         if(isset($_POST['redirect_after_registration'])){
 
             // Si estamos redirigiendo es porque ya lo queremos también con sesión iniciada
-            wp_set_current_user($id_del_usuario_creado);
-            wp_set_auth_cookie($id_del_usuario_creado);
+            wp_set_current_user($the_created_user_id);
+            wp_set_auth_cookie($the_created_user_id);
 
             wp_safe_redirect($_POST['redirect_after_registration']);
             exit();
         }
         
-        // Redirigir a la página de registro finalizado sin loguin
-        wp_redirect($this->url_de_registro_finalizado());
+        // Redirect to registration finished page
+        wp_redirect($this->registration_finished_url());
         exit;
 
     }
 }
 
 
-// Enviar email de activación
-public function enviar_email_activacion($id_usuario){
+// Send activation email
+public function send_activation_email($user_id){
 
-    $usuario = get_userdata($id_usuario);
+    $user = get_userdata($user_id);
 
-    if($usuario && !is_wp_error($usuario)){
+    if($user && !is_wp_error($user)){
         
-        // Generar código de activación
-        $codigo_activacion = sha1(time());
+        // Generate activation code
+        $activation_code = sha1(time());
 
-        // Guardar el código junto a los metadatos del usuario
-        update_user_meta($id_usuario, 'wup_user_activation_code', $codigo_activacion, true);
-
-        $url_de_acceso = get_permalink(get_option('wup_page_id_for_login'));
+        // Save the activation code as a user meta
+        update_user_meta($user_id, 'wup_user_activation_code', $activation_code, true);
 
         $nombre_del_sitio = wp_specialchars_decode(get_option('blogname'), ENT_QUOTES);
-        $enlace_activacion = add_query_arg(
+        $activation_link = add_query_arg(
             [
-                'c'  => $codigo_activacion,
-                'u' => $id_usuario,
+                'c' => $activation_code,
+                'u' => $user_id,
             ],
-            $url_de_acceso
+            get_permalink(get_option('wup_page_id_for_login'))
         );
 
-        $mensaje_activacion = __('Haz clic en el enlace para activar tu cuenta:').'<br><br>';
-        $mensaje_activacion .= '<a href="'.$enlace_activacion.'">'.$enlace_activacion.'</a>';
+        $activation_message = __('Open the following link to activate your account:', 'wup').'<br><br>';
+        $activation_message .= '<a href="'.$activation_link.'">'.$activation_link.'</a>';
         $headers = ['Content-Type: text/html; charset=UTF-8'];
         
-        wp_mail($usuario->user_email, __('Activa tu cuenta'), $mensaje_activacion, $headers);
+        wp_mail($user->user_email, __('Activate your account', 'wup'), $activation_message, $headers);
 
     }
 }
@@ -269,12 +265,12 @@ public function get_post_value($key){
 }
 
 // Show errors on the form
-public function mostrar_avisos(){
+public function maybe_display_notice(){
 
-    $avisos = wp_cache_get( 'skpu_avisos_registro' );
+    $notice = wp_cache_get( 'wup_registration_notice' );
 
-    if($avisos){    
-        echo '<div class="skpu-message">'.$avisos.'</div>';
+    if($notice){    
+        echo '<div class="wup-message">'.$notice.'</div>';
     }
 
 }

@@ -1,174 +1,210 @@
 <?php
 
-// ACCIONES Y FILTROS
+// ACTIONS AND FILTERS
 
-// Crear la página de ajustes
-add_action('admin_menu', 'skpu_pagina_de_ajustes');
+// Create the settings page
+add_action('admin_menu', 'wup_settings_page');
 
-// Crear las secciones y campos editables
-add_action('admin_init', 'skpu_crear_secciones_y_campos');
+// Create sections and fields
+add_action('admin_init', 'wup_settings_page_sections_and_fields');
 
-// FUNCIONES ASOCIADAS A LAS ACCIONES Y FILTROS
 
-function skpu_pagina_de_ajustes(){
+// ACTIONS AND FILTERS CALLBACKS
+
+function wup_settings_page(){
     add_options_page(
-    'Ajustes de perfiles',        /* Título de la página de ajustes */
-    'Perfiles',                   /* Nombre que aparece en el menú */
-    'manage_options',             /* Permiso necesario para ver este menú */
-    'pagina_ajustes_perfiles',    /* Identificador único para esta página*/
-    'mostrar_ajustes_perfiles',   /* Nombre de la función que muestra el contenido */
-    3                             /* Posición de este menú en el panel lateral */
+    __('User Profile Settings', 'wup'),     // Page title
+    __('User Profile', 'wup'),              // Menu label
+    'manage_options',                       // Required cap to see this page
+    'wup_settings_page',                    // ID for this page
+    'wup_render_settings_page_content',     // Callback that renders the page content
+    3                                       // Menu position
     );
 }
 
-function skpu_crear_secciones_y_campos(){
+function wup_settings_page_sections_and_fields(){
 
-    // Crear una sección de ajustes
+    // The section for pages
     add_settings_section(
-    'seccion_ajustes_paginas',                     /* Identificador de la sección */
-    'Páginas',                                     /* Título de la sección */
-    'mostrar_encabezado_seccion_ajustes_paginas',  /* Función para mostrar contenido de cabecera */
-    'pagina_ajustes_perfiles'                      /* Página de ajustes a la que va asociada */
+    'wup_pages_settings_section',           // Section ID
+    __('Pages', 'wup'),                     // Section title
+    'wup_pages_settings_section_heading',   // Callback to display section heading
+    'wup_settings_page'                     // The settings page this section belongs to
     );
 
-    // Opción para página de acceso
+    // The section for options
+    add_settings_section(
+    'wup_options_settings_section',
+    __('Options', 'wup'),
+    'wup_options_settings_section_heading',
+    'wup_settings_page'
+    );
+
+    // For the "pages" section
+
+    // Add Setting: Login page ID
     register_setting(
-    'skpu_ajustes',          /* Nombre del grupo de opciones */
-    'wup_page_id_for_login'  /* Nombre de la opción */
+    'wup_settings',                         // Options group name
+    'wup_page_id_for_login'                 // Option name
     );
 
     add_settings_field(
-    'wup_page_id_for_login',             /* Identificador único de este campo */
-    'Id de la página Acceder',           /* Título que se muestra junto a este campo */
-    'mostrar_input_pagina_de_acceso',    /* Función que imprime el input para el formulario */
-    'pagina_ajustes_perfiles',           /* Página de ajustes a la que va asociado */
-    'seccion_ajustes_paginas'            /* Sección de ajustes a la que va asociado */
+    'wup_page_id_for_login',                // Field ID
+    __('Login page ID', 'wup'),             // Field title
+    'display_login_page_id_field',          // Callback
+    'wup_settings_page',                    // The settings page this field belongs to
+    'wup_pages_settings_section'            // The settings section this section belongs to
     );
 
-    // Opción para página de registro
+    // Add Setting: Registration page ID
     register_setting(
-    'skpu_ajustes',            /* Nombre del grupo de opciones */
-    'wup_page_id_for_registration'  /* Nombre de la opción */
+    'wup_settings',
+    'wup_page_id_for_registration'
     );
 
     add_settings_field(
-    'wup_page_id_for_registration',           /* Identificador único de este campo */
-    'Id de la página Registrarse',       /* Título que se muestra junto a este campo */
-    'mostrar_input_pagina_de_registro',  /* Función que imprime el input para el formulario */
-    'pagina_ajustes_perfiles',           /* Página de ajustes a la que va asociado */
-    'seccion_ajustes_paginas'            /* Sección de ajustes a la que va asociado */
+    'wup_page_id_for_registration',
+    __('Registration page ID', 'wup'),
+    'display_registration_page_id_field',
+    'wup_settings_page',
+    'wup_pages_settings_section'
     );
 
-    // Opción para página de registro finalizado
+    // Add Setting: Registraion finished page ID
     register_setting(
-    'skpu_ajustes',                       /* Nombre del grupo de opciones */
-    'wup_page_id_for_registration_finished'  /* Nombre de la opción */
+    'wup_settings',
+    'wup_page_id_for_registration_finished'
     );
 
     add_settings_field(
-    'wup_page_id_for_registration_finished',           /* Identificador único de este campo */
-    'Id de la página de Registro Finalizado',       /* Título que se muestra junto a este campo */
-    'mostrar_input_pagina_de_registro_finalizado',  /* Función que imprime el input para el formulario */
-    'pagina_ajustes_perfiles',                      /* Página de ajustes a la que va asociado */
-    'seccion_ajustes_paginas'                       /* Sección de ajustes a la que va asociado */
+    'wup_page_id_for_registration_finished',
+    __('Registration finished page ID', 'wup'),
+    'display_registration_finished_page_id_field',
+    'wup_settings_page',
+    'wup_pages_settings_section'
     );
 
-    // Opción para página mi perfil
+    // Add Setting: Show my profile page ID
     register_setting(
-    'skpu_ajustes',             /* Nombre del grupo de opciones */
-    'wup_page_id_for_show_my_profile'  /* Nombre de la opción */
+    'wup_settings',
+    'wup_page_id_for_show_my_profile'
     );
 
     add_settings_field(
-    'wup_page_id_for_show_my_profile',          /* Identificador único de este campo */
-    'Id de la página Mi Perfil',         /* Título que se muestra junto a este campo */
-    'mostrar_input_pagina_mi_perfil',    /* Función que imprime el input para el formulario */
-    'pagina_ajustes_perfiles',           /* Página de ajustes a la que va asociado */
-    'seccion_ajustes_paginas'            /* Sección de ajustes a la que va asociado */
+    'wup_page_id_for_show_my_profile',
+    __('Show my profile page ID', 'wup'),
+    'display_show_my_profile_page_id_field',
+    'wup_settings_page',
+    'wup_pages_settings_section'
     );
 
-    // Opción para página editar mi perfil
+    // Add Setting: Edit my profile page ID
     register_setting(
-    'skpu_ajustes',                    /* Nombre del grupo de opciones */
-    'wup_page_id_for_edit_my_profile'  /* Nombre de la opción */
+    'wup_settings',
+    'wup_page_id_for_edit_my_profile'
     );
 
     add_settings_field(
-    'wup_page_id_for_edit_my_profile',       /* Identificador único de este campo */
-    'Id de la página Editar Perfil',         /* Título que se muestra junto a este campo */
-    'mostrar_input_pagina_editar_mi_perfil', /* Función que imprime el input para el formulario */
-    'pagina_ajustes_perfiles',               /* Página de ajustes a la que va asociado */
-    'seccion_ajustes_paginas'                /* Sección de ajustes a la que va asociado */
+    'wup_page_id_for_edit_my_profile',
+    __('Edit my profile page ID', 'wup'),
+    'display_edit_my_profile_page_id_field',
+    'wup_settings_page',
+    'wup_pages_settings_section'
+    );
+
+    // For the "options" section
+
+    // Add Setting: Disable activation email
+    register_setting(
+    'wup_settings',
+    'wup_disable_activation_email'
+    );
+
+    add_settings_field(
+    'wup_disable_activation_email',
+    __('Disable activation email (auto activate account)', 'wup'),
+    'display_disable_activation_email_field',
+    'wup_settings_page',
+    'wup_options_settings_section'
     );
 
 }
 
-// Función que muestra el texto de encabezado de la sección
-function mostrar_encabezado_seccion_ajustes_paginas(){
-    echo '<p>En esta sección especificamos los id de las páginas de acceso, registro, perfil, etc...</p>';
+// This function renders the heading for the Pages section
+function wup_pages_settings_section_heading(){
+    echo '<p>'.__('In this section you may set the pages ids for each view', 'wup').'</p>';
 }
 
-// Función que muestra el input de página de acceso
-function mostrar_input_pagina_de_acceso(){
+// Render login page ID form input
+function display_login_page_id_field(){
     echo '<input
     type="number"
     name="wup_page_id_for_login"
     value="'.esc_attr(get_option('wup_page_id_for_login')).'" />';
 }
 
-// Función que muestra el input de página de registro
-function mostrar_input_pagina_de_registro(){
+// Render registration page ID form input
+function display_registration_page_id_field(){
     echo '<input
     type="number"
     name="wup_page_id_for_registration"
     value="'.esc_attr(get_option('wup_page_id_for_registration')).'" />';
 }
 
-// Función que muestra el input de página de registro finalizado
-function mostrar_input_pagina_de_registro_finalizado(){
+// Render registration finished page ID form input
+function display_registration_finished_page_id_field(){
     echo '<input
     type="number"
     name="wup_page_id_for_registration_finished"
     value="'.esc_attr(get_option('wup_page_id_for_registration_finished')).'" />';
 }
 
-// Función que muestra el input de página mi perfil
-function mostrar_input_pagina_mi_perfil(){
+// Render show my profile page ID form input
+function display_show_my_profile_page_id_field(){
     echo '<input
     type="number"
     name="wup_page_id_for_show_my_profile"
     value="'.esc_attr(get_option('wup_page_id_for_show_my_profile')).'" />';
 }
 
-// Función que muestra el input de página editar mi perfil
-function mostrar_input_pagina_editar_mi_perfil(){
+// Render edit my profile page ID form input
+function display_edit_my_profile_page_id_field(){
     echo '<input
     type="number"
     name="wup_page_id_for_edit_my_profile"
     value="'.esc_attr(get_option('wup_page_id_for_edit_my_profile')).'" />';
 }
 
-// Función que muestra el contenido de la página de ajustes
-function mostrar_ajustes_perfiles(){
+// Render the checkbox to disable the activation email
+function display_disable_activation_email_field(){
+    $checked = (get_option('wup_disable_activation_email'))?' checked="checked"':'';
+    echo '<input '.$checked.'
+    type="checkbox"
+    name="wup_disable_activation_email"
+    value="1" />';
+}
+
+// Function that displays the settings page in the admin area
+function wup_render_settings_page_content(){
     echo '
-    <h1>Ajustes de Perfiles</h1>
-    <p>Aquí puedes poner lo que te dé la gana.</p>
+    <h1>'.__('User Profile Settings').'</h1>
+    <p>'.__('Settings for the Winni User Profile plugin', 'wup').'</p>
     ';
 
-    // Formulario de opciones
+    // Start the form
     echo '<form action="options.php" method="post">';
 
-    // Decirle a WordPress que genere los campos
-    settings_fields('skpu_ajustes');                  /* Id del grupo de opciones */
-    do_settings_sections('pagina_ajustes_perfiles');  /* Id de la página de ajustes */
+    // Generate fields
+    settings_fields('wup_settings');               // Options group
+    do_settings_sections('wup_settings_page');     // Settings page ID
 
-    // Mostrar el botón de Guardar y cerrar el formulario
+    // Display save button and close form
     echo '
     <input
       type="submit"
       name="submit"
       class="button button-primary"
-      value="Guardar"
+      value="Save"
     />
     </form>';
 }
