@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Winni User Profile\n"
-"POT-Creation-Date: 2021-04-11 18:04+0200\n"
-"PO-Revision-Date: 2021-04-11 18:05+0200\n"
+"POT-Creation-Date: 2021-04-11 21:58+0200\n"
+"PO-Revision-Date: 2021-04-11 21:59+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: es_ES\n"
@@ -152,46 +152,36 @@ msgid "Please, verify your account"
 msgstr "Por favor, verifique su cuenta"
 
 #: controllers/class-login.php:268
-msgid "You have to repeat your password"
+msgid "You have to enter your new password"
 msgstr "Por favor, debe repetir la clave"
 
-#: controllers/class-login.php:273 controllers/class-registration.php:152
-msgid "The provided passwords do not match"
-msgstr "Las contraseñas proporcionadas no coinciden"
-
-#: controllers/class-login.php:299
+#: controllers/class-login.php:294
 msgid "No user was found with the provided email or username"
 msgstr ""
 "No se encontró ningún usuario con el correo electrónico o nombre de usuario "
 "proporcionado"
 
-#: controllers/class-login.php:314
+#: controllers/class-login.php:309
 msgid "A password recovery email has been requested"
 msgstr "Se ha solicitado un correo electrónico de recuperación de contraseña"
 
-#: controllers/class-login.php:316
-#, php-format
-msgid "User: %s"
-msgstr "Usuario: %s"
-
-#: controllers/class-login.php:317
+#: controllers/class-login.php:310
 msgid "To reset your password, click the following link:"
 msgstr "Para restablecer tu contraseña, haz clic en el siguiente enlace:"
 
-#: controllers/class-login.php:322
-#, php-format
-msgid "[%s] Password recovery"
-msgstr "[%s] Recuperación de clave"
+#: controllers/class-login.php:312
+msgid "Password recovery"
+msgstr "Recuperación de clave"
 
-#: controllers/class-login.php:343 controllers/class-login.php:351
+#: controllers/class-login.php:333 controllers/class-login.php:341
 msgid "This password recovery link is not longer valid"
 msgstr "Este enlace de recuperación de contraseña ya no es válido"
 
-#: controllers/class-login.php:375
+#: controllers/class-login.php:365
 msgid "Your password has been updated"
 msgstr "Su contraseña ha sido actualizada"
 
-#: controllers/class-login.php:376
+#: controllers/class-login.php:366
 msgid "Password updated"
 msgstr "Contraseña actualizada"
 
@@ -204,7 +194,7 @@ msgid "Avatar"
 msgstr "Avatar"
 
 #: controllers/class-profile.php:65 controllers/class-profile.php:127
-#: views/form-login.php:16 views/form-registration.php:18
+#: views/form-login.php:18 views/form-registration.php:18
 msgid "Password"
 msgstr "Contraseña"
 
@@ -253,34 +243,25 @@ msgstr "Nueva contraseña"
 msgid "Repeat"
 msgstr "Repetir"
 
-#: controllers/class-profile.php:416
+#: controllers/class-profile.php:415
 msgid "Image upload has failed"
 msgstr "La carga de imágenes ha fallado"
 
-#: controllers/class-profile.php:420
+#: controllers/class-profile.php:419
 msgid "Image extension must be PNG, GIF or JPG"
 msgstr "La extensión de imagen debe ser PNG, GIF o JPG"
 
-#: controllers/class-profile.php:442
+#: controllers/class-profile.php:444
 msgid "There was a problem, please try again"
 msgstr "Hubo un problema, por favor inténtelo de nuevo"
 
-#: controllers/class-profile.php:471
+#: controllers/class-profile.php:473
 msgid "Your profile was updated successfully!"
 msgstr "¡Tu perfil se actualizó correctamente!"
 
 #: controllers/class-profile.php:498
 msgid "Please make sure the passwords match"
 msgstr "Asegúrese de que las contraseñas coincidan"
-
-#: controllers/class-profile.php:508
-#, php-format
-msgid ""
-"Your password was successfully changed and you have been logged out. Please "
-"<a href=\"%s\">login again here</a>"
-msgstr ""
-"La contraseña se ha cambiado correctamente y ha iniciado sesión. Por favor, "
-"<a href=\"%s\">vuelva a acceder</a>"
 
 #: controllers/class-registration.php:101
 msgid "Please provide a valid email"
@@ -299,6 +280,10 @@ msgstr "Una cuenta ya existe con este nombre de usuario"
 msgid "Please provide a password"
 msgstr "Por favor indícanos un password"
 
+#: controllers/class-registration.php:152
+msgid "The provided passwords do not match"
+msgstr "Las contraseñas proporcionadas no coinciden"
+
 #: controllers/class-registration.php:247
 msgid "Open the following link to activate your account:"
 msgstr "Abre el siguiente enlace para activar tu cuenta:"
@@ -307,7 +292,7 @@ msgstr "Abre el siguiente enlace para activar tu cuenta:"
 msgid "Activate your account"
 msgstr "Activa tu cuenta"
 
-#: views/form-edit-my-profile.php:54
+#: views/form-edit-my-profile.php:56
 msgid "Save"
 msgstr "Guardar"
 
@@ -315,15 +300,19 @@ msgstr "Guardar"
 msgid "Your account has been activated"
 msgstr "Tu cuenta ha sido activada"
 
-#: views/form-login.php:13
+#: views/form-login.php:5
+msgid "Your password has been updated, please login again"
+msgstr "Su contraseña ha sido actualizada, por favor vuelva a iniciar sesión"
+
+#: views/form-login.php:15
 msgid "Email or Username"
 msgstr "Email o Usuario"
 
-#: views/form-login.php:20
+#: views/form-login.php:22
 msgid "Remember"
 msgstr "Recordarme"
 
-#: views/form-login.php:24
+#: views/form-login.php:26
 msgid "Login"
 msgstr "Iniciar sesión"
 
@@ -351,11 +340,7 @@ msgstr "E-mail"
 msgid "Create account"
 msgstr "Crear una cuenta"
 
-#: views/form-reset-password.php:14
-msgid "Confirm new password"
-msgstr "Confirmar nueva contraseña"
-
-#: views/form-reset-password.php:18
+#: views/form-reset-password.php:15
 msgid "Update password"
 msgstr "Actualizar contraseña"
 
@@ -382,6 +367,21 @@ msgstr "Funcionalidad de perfiles de usuario sin basura añadida de CSS/JS."
 #. Author of the plugin/theme
 msgid "Álvaro Franz"
 msgstr "Álvaro Franz"
+
+#, php-format
+#~ msgid "User: %s"
+#~ msgstr "Usuario: %s"
+
+#, php-format
+#~ msgid ""
+#~ "Your password was successfully changed and you have been logged out. "
+#~ "Please <a href=\"%s\">login again here</a>"
+#~ msgstr ""
+#~ "La contraseña se ha cambiado correctamente y ha iniciado sesión. Por "
+#~ "favor, <a href=\"%s\">vuelva a acceder</a>"
+
+#~ msgid "Confirm new password"
+#~ msgstr "Confirmar nueva contraseña"
 
 #~ msgid "Edit your email address - used for resetting your password etc."
 #~ msgstr ""

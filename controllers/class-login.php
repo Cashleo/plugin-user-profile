@@ -250,33 +250,28 @@ public function process_password_recovery(){
     }elseif('execute-password-reset' == $_POST['wup-password-recovery-step']){
 
         // If required data is set
-        if(isset($_POST['password1']) 
-        && isset($_POST['password2']) 
+        if(isset($_POST['new-password'])
         && isset($_POST['key']) 
         && isset($_POST['login'])){
 
-        // Comprobar el key de recuperación
+        // Check the password reset key
         $user = check_password_reset_key($_POST['key'], $_POST['login']);
 
-            if(is_object($user)){
+            if(is_wp_error($user)){
 
-                // Guardar estos valores para el formulario (por si hay que repetir las claves)
-                $args['key'] = $_POST['key'];
-                $args['login'] = sanitize_user($_POST['login']);
+                wp_redirect(add_query_arg(['action' => 'lp'], $this->login_url()));
+                exit;
 
-                if(empty($_POST['password1']) || empty($_POST['password2'])){
-                    wp_cache_set('wup_login_notice', __('You have to repeat your password', 'wup'));
-                    return;
-                }
+            }else{
 
-                if($_POST['password1'] !== $_POST['password2']){
-                    wp_cache_set('wup_login_notice', __('The provided passwords do not match', 'wup'));
+                if(empty($_POST['new-password'])){
+                    wp_cache_set('wup_login_notice', __('You have to enter your new password', 'wup'));
                     return;
                 }
 
                 // Realizamos el cambio de clave
-                $this->update_password_and_send_confirmation_email($user, $_POST['password1']);
-                wp_redirect(add_query_arg('pr-ok', '1', remove_query_arg(['key', 'login'])));
+                $this->update_password_and_send_confirmation_email($user, $_POST['new-password']);
+                wp_redirect(add_query_arg(['pwu' => '1'], $this->login_url()));
                 exit;
                 
             }
