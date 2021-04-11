@@ -5,7 +5,7 @@ $Login->maybe_display_notice();
 
 <form method="post">
     <input type="hidden" name="key" value="<?php echo esc_attr($_GET['key']); ?>">
-    <input type="hidden" name="login" value="<?php echo isset($_GET['login']) ? sanitize_user($_GET['login']) : ''; ?>" />
+    <input type="hidden" name="login" value="<?php echo isset($_GET['login']) ? urldecode($_GET['login']) : ''; ?>" />
     <input type="hidden" name="wup-password-recovery-step" value="execute-password-reset">
 
     <label for="skpu-password1"><?php esc_attr_e('New password', 'wup'); ?></label>

@@ -256,7 +256,7 @@ public function process_password_recovery(){
         && isset($_POST['login'])){
 
         // Comprobar el key de recuperación
-        $user = check_password_reset_key($_POST['key'], sanitize_user($_POST['login']));
+        $user = check_password_reset_key($_POST['key'], $_POST['login']);
 
             if(is_object($user)){
 
@@ -311,17 +311,12 @@ public function send_password_recovery_email(){
         $this->login_url()
     );
 
-    $password_recovery_message = __('A password recovery email has been requested', 'wup')."\r\n\r\n";
-    $password_recovery_message .= network_home_url('/')."\r\n\r\n";
-    $password_recovery_message .= sprintf(esc_html__('User: %s', 'wup'), $user->user_login)."\r\n\r\n";
-    $password_recovery_message .= esc_html_e('To reset your password, click the following link:', 'wup')."\r\n\r\n";
-    $password_recovery_message .= ' '.$password_recovery_url." \r\n";
-
-    $current_site_name = wp_specialchars_decode(get_option('blogname'), ENT_QUOTES);
-
-    $password_recovery_subject = sprintf(esc_html__('[%s] Password recovery', 'wup'), $current_site_name);
+    $password_recovery_message = __('A password recovery email has been requested', 'wup').'<br>'.
+     __('To reset your password, click the following link:', 'wup').'<br>'.
+     '<a href="'.$password_recovery_url.'">'.$password_recovery_url.'</a>';
+    $password_recovery_subject = __('Password recovery', 'wup');
    
-    wp_mail($user->user_email, wp_specialchars_decode($password_recovery_subject), $password_recovery_message);
+    wp_mail($user->user_email, $password_recovery_subject, $password_recovery_message);
 
     return true;
 }

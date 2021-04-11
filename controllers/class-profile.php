@@ -429,7 +429,7 @@ public function save_editable_fields($all_editable_sections, $user_id){
                         $field_value = sanitize_text_field($field_value);
                     break;
                     default:
-                        continue;
+                        continue 2; // Jump out of switch and continue
                 }
 
                 // Update the user meta data
