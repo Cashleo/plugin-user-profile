@@ -1,6 +1,8 @@
 <?php
-if(isset($_GET['a'])){
+if(isset($_GET['a'])){ // Activated
 	echo '<div class="wup-notice success">'.esc_html(__('Your account has been activated', 'wup')).'</div>';
+}elseif(isset($_GET['pwu'])){ // Password updated
+	echo '<div class="wup-notice success">'.esc_html(__('Your password has been updated, please login again', 'wup')).'</div>';
 }
 
 $Login = new WUP_Login();

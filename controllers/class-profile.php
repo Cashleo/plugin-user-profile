@@ -17,8 +17,8 @@ public static function setup_hooks(){
     add_shortcode('wup_show_my_profile', [$this_class, 'shortcode_show_my_profile']);
     add_shortcode('wup_edit_my_profile', [$this_class, 'shortcode_edit_my_profile']);
 
+    add_action('template_redirect', [$this_class, 'maybe_update_user_password'], 10, 2);
     add_action('wup_hook_before_displaying_sections', [$this_class, 'save_editable_fields'], 5, 2);
-    add_action('wup_hook_before_displaying_sections', [$this_class, 'save_password'], 10, 2);
 
     add_filter('wup_editable_sections', [$this_class, 'add_profile_section'], 10);
     add_filter('wup_editable_sections', [$this_class, 'add_avatar_section'], 10);
@@ -368,7 +368,6 @@ public function save_editable_fields($all_editable_sections, $user_id){
 
             // If the key is not in our list of registered keys - move to next in array
             if(!in_array($field_id, $all_editable_fields_ids)){
-                winni_log($field_id.' is not editable');
                 continue;
             }
 
@@ -426,8 +425,11 @@ public function save_editable_fields($all_editable_sections, $user_id){
                     case 'email':
                         $field_value = sanitize_email($field_value);
                     break;
-                    default:
+                    case 'text':
                         $field_value = sanitize_text_field($field_value);
+                    break;
+                    default:
+                        continue;
                 }
 
                 // Update the user meta data
@@ -476,81 +478,49 @@ public function save_editable_fields($all_editable_sections, $user_id){
 }
 
 // Save password
-function save_password($sections, $user_id){
-
-    // Array to store messages
-    $messages = [];
+function maybe_update_user_password(){
 
     // Check the nonce
     if(!isset($_POST['edit-profile-nonce']) || !wp_verify_nonce($_POST['edit-profile-nonce'], 'wup_edit_profile_action')){
         return;
     }
 
-    $data = (isset($_POST['password'])) ? $_POST['password'] : '';
+    $new_password = (isset($_POST['password']['user_pass'])) ? $_POST['password']['user_pass'] : '';
 
     // Make sure the password is not empty
-    if(empty($data)){
+    if(empty($new_password)){
+        wp_cache_set('wup_profile_notice','empttyyy');
         return;
     }
 
     // Check that the password match
-    if($data['user_pass'] != $data['user_pass_check']){
-        $messages['password_mismatch'] = '<p class="error">'.__('Please make sure the passwords match', 'wup').'.</p>';
+    if($_POST['password']['user_pass'] != $_POST['password']['user_pass_check']){
+        wp_cache_set('wup_profile_notice', '<p class="error">'.__('Please make sure the passwords match', 'wup').'.</p>');
+        wp_cache_set('wup_profile_notice','nomatch');
+        return;
     }
 
-    // Check we have any messages in the messages array - if we have password failed at some point
-    if(empty($messages)){
-        
-        // The password can now be updated and redirect the user to the acceso page
-        wp_set_password($data['user_pass'], $user_id);
-        
-        // Translators: %s: acceso link
-        $successfully_msg = '<div class="messages"><p class="updated">'.sprintf(__('Your password was successfully changed and you have been logged out. Please <a href="%s">login again here</a>', 'wup'), esc_url(wp_acceso_url())).'</p></div>';
-        echo wp_kses(
-            $successfully_msg,
-            [
-                'div' => [
-                    'class' => [],
-                ],
-                'p'   => [
-                    'class' => [],
-                ],
-                'a'   => [
-                    'href' => [],
-                ],
-            ]
-        );
-        
-    // Messages not empty therefore password failed
-    }else{
-    ?>
-		<div class="wup-notice error">
-		<?php
-        foreach ($messages as $message) {
-            echo wp_kses(
-                $message,
-                [
+    // The password can now be updated
+    wp_set_password($new_password, get_current_user_id());
 
-                    'p' => [
-                        'class' => [],
-                    ],
-                ]
-            );
-        }
-        ?>
-		</div>
-	<?php
-    }
+    // Redirect to login page
+    wp_redirect(
+        add_query_arg(
+            ['pwu' => '1'], 
+            get_permalink(get_option('wup_page_id_for_login'))
+        )
+    );
+    exit;
 
 }
 
 // Mostrar errores en el formulario
 public function maybe_display_notice(){
 
-    $avisos = wp_cache_get('wup_avisos_perfil');
+    $notice = wp_cache_get('wup_profile_notice');
 
-    if($avisos){ 
-        echo '<div class="wup-message">'.$avisos.'</div>';
+    if($notice){ 
+        echo '<div class="wup-message">'.$notice.'</div>';
     }
 
 }
