@@ -29,5 +29,5 @@ $Login->maybe_display_notice();
 </form>
 
 <?php
-echo $Login->generate_password_recovery_url();
+echo $Login->print_password_recovery_link();
 ?>

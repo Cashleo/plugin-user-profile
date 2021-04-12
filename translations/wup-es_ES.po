@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Winni User Profile\n"
-"POT-Creation-Date: 2021-04-11 21:58+0200\n"
-"PO-Revision-Date: 2021-04-11 21:59+0200\n"
+"POT-Creation-Date: 2021-04-11 23:43+0200\n"
+"PO-Revision-Date: 2021-04-11 23:44+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: es_ES\n"
@@ -120,18 +120,17 @@ msgid "You are now logged out"
 msgstr "Ahora estás desconectado"
 
 #: controllers/class-login.php:139 controllers/class-login.php:184
-#: controllers/class-login.php:236 controllers/class-registration.php:92
-#: controllers/class-registration.php:101
-#: controllers/class-registration.php:108
-#: controllers/class-registration.php:124
-#: controllers/class-registration.php:140
-#: controllers/class-registration.php:146
-#: controllers/class-registration.php:152
+#: controllers/class-login.php:236 controllers/class-registration.php:71
+#: controllers/class-registration.php:80 controllers/class-registration.php:87
+#: controllers/class-registration.php:103
+#: controllers/class-registration.php:119
+#: controllers/class-registration.php:125
+#: controllers/class-registration.php:131
 msgid "Error"
 msgstr "Error"
 
 #: controllers/class-login.php:139 controllers/class-login.php:236
-#: controllers/class-registration.php:92
+#: controllers/class-registration.php:71
 msgid "Please try again"
 msgstr "Por favor, inténtelo de nuevo"
 
@@ -263,32 +262,32 @@ msgstr "¡Tu perfil se actualizó correctamente!"
 msgid "Please make sure the passwords match"
 msgstr "Asegúrese de que las contraseñas coincidan"
 
-#: controllers/class-registration.php:101
+#: controllers/class-registration.php:80
 msgid "Please provide a valid email"
 msgstr "Por favor, proporcione un correo electrónico válido"
 
-#: controllers/class-registration.php:108
+#: controllers/class-registration.php:87
 msgid "An account already exists with this email address"
 msgstr "Ya existe una cuenta con esta dirección de correo electrónico"
 
-#: controllers/class-registration.php:124
+#: controllers/class-registration.php:103
 msgid "An account already exists with this username"
 msgstr "Una cuenta ya existe con este nombre de usuario"
 
-#: controllers/class-registration.php:140
-#: controllers/class-registration.php:146
+#: controllers/class-registration.php:119
+#: controllers/class-registration.php:125
 msgid "Please provide a password"
 msgstr "Por favor indícanos un password"
 
-#: controllers/class-registration.php:152
+#: controllers/class-registration.php:131
 msgid "The provided passwords do not match"
 msgstr "Las contraseñas proporcionadas no coinciden"
 
-#: controllers/class-registration.php:247
+#: controllers/class-registration.php:226
 msgid "Open the following link to activate your account:"
 msgstr "Abre el siguiente enlace para activar tu cuenta:"
 
-#: controllers/class-registration.php:251
+#: controllers/class-registration.php:230
 msgid "Activate your account"
 msgstr "Activa tu cuenta"
 
@@ -317,8 +316,8 @@ msgid "Login"
 msgstr "Iniciar sesión"
 
 #: views/form-lost-password.php:7
-msgid "Username or E-mail:"
-msgstr "Usuario o email:"
+msgid "E-mail or username:"
+msgstr "E-mail o Usuario:"
 
 #: views/form-lost-password.php:11
 msgid "Reset password"
@@ -367,6 +366,9 @@ msgstr "Funcionalidad de perfiles de usuario sin basura añadida de CSS/JS."
 #. Author of the plugin/theme
 msgid "Álvaro Franz"
 msgstr "Álvaro Franz"
+
+#~ msgid "Username or E-mail:"
+#~ msgstr "Usuario o email:"
 
 #, php-format
 #~ msgid "User: %s"

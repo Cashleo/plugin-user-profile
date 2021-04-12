@@ -19,35 +19,14 @@ public static function setup_hooks(){
 }
 
 // [wup_registration] shortcode callback
-public function shortcode_registration($atts){
-
-    $atts = shortcode_atts(
-        [
-            'specific_role' => '',    // Force a specific role
-            'role_selector' => ''     // Allow the user to select a role
-        ],
-        $atts
-    );
+public function shortcode_registration(){
 
     ob_start();
 
     if(is_user_logged_in()){
-
-        wup_load_view(
-            'registration-already-logged-in.php',
-            [
-                'user' => wp_get_current_user(),
-            ]
-        );
-
+        wup_load_view('registration-already-logged-in.php');
     }else{
-
-        $args = [
-            'specific_role'    => $atts['specific_role'],
-            'role_selector' => $atts['role_selector']
-        ];
         wup_load_view('form-registration.php', $args);
-
     }
 
     return ob_get_clean();

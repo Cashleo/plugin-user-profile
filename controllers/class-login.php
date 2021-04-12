@@ -75,9 +75,9 @@ public function filter_password_recovery_url($url, $redirect){
     return $this->get_action_url('lp', $redirect);
 }
 
-// Generate password recovery URL
-public function generate_password_recovery_url(){
-    return sprintf('<a href="%s">%s</a>', $this->get_action_url('lp'), __('I lost my password', 'wup'));
+// Output password recovery URL
+public function print_password_recovery_link(){
+    echo sprintf('<a href="%s">%s</a>', $this->get_action_url('lp'), __('I lost my password', 'wup'));
 }
 
 // [wup_login] shortcode callback
@@ -284,10 +284,10 @@ public function process_password_recovery(){
 // Enviar el correo de recuperación de clave
 public function send_password_recovery_email(){
 
-    if(is_email($_POST['login'])){
-        $user = get_user_by('email', sanitize_email(wp_unslash($_POST['login'])));
+    if(is_email($_POST['mail-or-user'])){
+        $user = get_user_by('email', sanitize_email(wp_unslash($_POST['mail-or-user'])));
     }else{
-        $user = get_user_by('login', sanitize_user(wp_unslash($_POST['login'])));
+        $user = get_user_by('login', sanitize_user(wp_unslash($_POST['mail-or-user'])));
     }
 
     if(!$user){
